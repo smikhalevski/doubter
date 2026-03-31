@@ -502,9 +502,9 @@ the array of issues:
 <dt><code>code</code></dt>
 <dd>
 
-The code of the validation issue. In the example above, `"type"` code refers to a failed number type check. While shapes
-check input value type and raise type issues, there also [various operations](#built-in-plugins) that also may raise
-issues with unique codes, see the table below.
+The code of the validation issue. In the example above, `"type"` code refers to a failed number type check. While
+shapes check input value type and raise type issues, there also [various operations](#built-in-plugins) that also may
+raise issues with unique codes, see the table below.
 
 You can add [a custom operation](#operations) to any shape and return an issue with your custom code.
 
@@ -512,8 +512,8 @@ You can add [a custom operation](#operations) to any shape and return an issue w
 <dt><code>path</code></dt>
 <dd>
 
-The object path as an array of keys, or `undefined` if there's no path. Keys can be strings, numbers (for example, array
-indices), symbols, and any other values since they can be `Map` keys, see [`d.map`](#map).
+The object path as an array of keys, or `undefined` if there's no path. Keys can be strings, numbers (for example,
+array indices), symbols, and any other values since they can be `Map` keys, see [`d.map`](#map).
 
 </dd>
 <dt><code>input</code></dt>
@@ -533,15 +533,15 @@ The human-readable issue message. Refer to [Localization](#localization) section
 <dt><code>param</code></dt>
 <dd>
 
-The parameter value associated with the issue. For built-in checks, the parameter value depends on `code`, see the table
-below.
+The parameter value associated with the issue. For built-in checks, the parameter value depends on `code`, see the
+table below.
 
 </dd>
 <dt><code>meta</code></dt>
 <dd>
 
-The optional metadata associated with the issue. Refer to [Annotations and metadata](#annotations-and-metadata) section
-for more details.
+The optional metadata associated with the issue. Refer to [Annotations and metadata](#annotations-and-metadata)
+section for more details.
 
 </dd>
 </dl>
@@ -606,8 +606,8 @@ for more details.
 # Operations
 
 > [!IMPORTANT]\
-> While operations are a powerful tool, most of the time you don't need to add operations directly. Instead, you can use
-> the higher-level API: [checks](#checks), [refinements](#refinements), and [alterations](#alterations).
+> While operations are a powerful tool, most of the time you don't need to add operations directly. Instead, you can
+> use the higher-level API: [checks](#checks), [refinements](#refinements), and [alterations](#alterations).
 
 Operations can check and transform the shape output value. Let's create a shape with an operation that trims an input
 string:
@@ -800,8 +800,8 @@ These shapes never apply operations if an underlying shape has raised an issue:
 
 ## Async operations
 
-Operations callbacks can be asynchronous. They have the same set of arguments as synchronous alternative, by must return
-a promise. Consequent operations after the asynchronous operation would wait for its result:
+Operations callbacks can be asynchronous. They have the same set of arguments as synchronous alternative, by must
+return a promise. Consequent operations after the asynchronous operation would wait for its result:
 
 ```ts
 const shape = d.string().addAsyncOperation(async value => {
@@ -824,8 +824,8 @@ Adding an async operation to the shape, makes shape itself async, so use
 
 ## Checks
 
-Checks are the most common [operations](#operations) that allow constraining the input value beyond type assertions. For
-example, if you want to constrain a numeric input to be greater than or equal to 5:
+Checks are the most common [operations](#operations) that allow constraining the input value beyond type assertions.
+For example, if you want to constrain a numeric input to be greater than or equal to 5:
 
 ```ts
 const shape = d.number().check(value => {
@@ -843,8 +843,8 @@ shape.parse(3);
 // ❌ ValidationError: kaputs at /
 ```
 
-A check callback receives the shape output value and must return an issue or an array of issues if the value is invalid.
-If the value is valid, a check callback must return `null`, `undefined`, or an empty array.
+A check callback receives the shape output value and must return an issue or an array of issues if the value is
+invalid. If the value is valid, a check callback must return `null`, `undefined`, or an empty array.
 
 Add asynchronous checks using [`checkAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#checkasync).
 This method has the same semantics as [`check`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#check)
@@ -916,10 +916,11 @@ shape1.parse('Mars');
 
 Add asynchronous refinements using
 [`refineAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#refineasync). This method has the same
-semantics as [`refine`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#refine) but returns a promise and
-[makes the shape asynchronous](#async-shapes).
+semantics as [`refine`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#refine) but returns a promise
+and [makes the shape asynchronous](#async-shapes).
 
-Use refinements to [narrow](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) the output type of the shape:
+Use refinements to [narrow](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) the output type of the
+shape:
 
 ```ts
 function isMarsOrPluto(value: string): value is 'Mars' | 'Pluto' {
@@ -944,13 +945,14 @@ shape2.parse('Venus');
 ```
 
 > [!NOTE]\
-> You can [parameterize](#operations) refinements and [set tolerance for issues](#tolerance-for-issues) the same way as
-> any other operation.
+> You can [parameterize](#operations) refinements and [set tolerance for issues](#tolerance-for-issues) the same way
+> as any other operation.
 
 ## Alterations
 
-Alterations are [operations](#operations) that synchronously transform the shape output value without changing its type.
-For example, let's consider a string shape that trims the value and then checks that it has at least 3 characters:
+Alterations are [operations](#operations) that synchronously transform the shape output value without changing its
+type. For example, let's consider a string shape that trims the value and then checks that it has at least 3
+characters:
 
 ```ts
 d.string()
@@ -974,8 +976,8 @@ Alteration callbacks must return the value of the same type, so consequent opera
 convert the shape output value to another type, consider using [conversions](#conversions).
 
 > [!NOTE]\
-> You can [parameterize](#operations) alterations and [set tolerance for issues](#tolerance-for-issues) the same way as
-> any other operation.
+> You can [parameterize](#operations) alterations and [set tolerance for issues](#tolerance-for-issues) the same way
+> as any other operation.
 
 # Conversions
 
@@ -1179,7 +1181,7 @@ shape.parse(1000, {
 
 # Shape piping
 
-With shape piping you to can pass the shape output to another shape.
+With shape piping you can pass the shape output to another shape.
 
 <!-- prettier-ignore -->
 ```ts
@@ -1250,8 +1252,8 @@ d.number().replace(0, 'zero');
 ```
 
 `replace` narrows its arguments to literal type but in TypeScript type system not all values have a separate literal
-type. For example, there's no literal type for `NaN` and `Infinity` values. In such cases `replace` doesn't exclude the
-replaced value type from the output type:
+type. For example, there's no literal type for `NaN` and `Infinity` values. In such cases `replace` doesn't exclude
+the replaced value type from the output type:
 
 ```ts
 d.enum([33, 42]).replace(NaN, 0);
@@ -1447,8 +1449,8 @@ d.or([d.number(), d.string()]).exclude(d.string());
 // ⮕ Shape<number | string, number>
 ```
 
-Sometimes you need an exclusion at runtime, but don't need it on the type level. For example, let's define a shape that
-allows any number except the \[3, 5] range:
+Sometimes you need an exclusion at runtime, but don't need it on the type level. For example, let's define a shape
+that allows any number except the \[3, 5] range:
 
 ```ts
 // 🟡 Note that the shape output is inferred as never
@@ -1456,8 +1458,9 @@ d.number().exclude(d.number().min(3).max(5));
 // ⮕ Shape<number, never>
 ```
 
-Since the excluded shape constrains the `number` type, the output type is inferred as `never`. While the excluded shape
-only restricts a limited range of numbers, there's no way to express this in TypeScript. So here's the workaround:
+Since the excluded shape constrains the `number` type, the output type is inferred as `never`. While the excluded
+shape only restricts a limited range of numbers, there's no way to express this in TypeScript. So here's the
+workaround:
 
 ```ts
 d.number().not(d.number().min(3).max(5));
@@ -1527,8 +1530,8 @@ const shape2 = d
 // ⮕ Shape<{ years?: string[] }, { years?: number[] }>
 ```
 
-In the example above, array elements don't allow `undefined` even after `deepPartial` was applied, this happened because
-array is converted during parsing.
+In the example above, array elements don't allow `undefined` even after `deepPartial` was applied, this happened
+because array is converted during parsing.
 
 > [!NOTE]\
 > You can also implement [deep partial protocol](#implementing-deep-partial-support) in your custom shapes.
@@ -1601,7 +1604,8 @@ bookTicket('Bill');
 ```
 
 In some cases, it can be desirable to simulate nominal typing inside TypeScript. For instance, you may wish to write a
-function that only accepts an input that has been validated by Doubter. This can be achieved with unchecked refinements:
+function that only accepts an input that has been validated by Doubter. This can be achieved with unchecked
+refinements:
 
 ```ts
 const flightCodeShape = d.string().brand<{ __brand__: 'FlightCode' }>();
@@ -1909,7 +1913,7 @@ fuzzyShape.parse(undefined);
 
 ## Nested shapes
 
-Object, array, union ond other composite shapes provide access to their nested shapes:
+Object, array, union and other composite shapes provide access to their nested shapes:
 
 ```ts
 const userShape = d.object({
@@ -2183,7 +2187,7 @@ Plugins use
 to extend functionality of shapes exported from the
 [doubter/core](https://smikhalevski.github.io/doubter/classes/core.html) module.
 
-Below is an example, how you can implement a naive email check and extend the
+Below is an example of how you can implement a naive email check and extend the
 [`StringShape`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html).
 
 ```ts
@@ -2245,14 +2249,14 @@ You can create custom shapes by extending the
 
 3. [`_isAsync()`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#_isasync)
 
-   The value returned from this method is toggles which method is used for parsing:
+   The value returned from this method toggles which method is used for parsing:
    - if `true` then `_applyAsync` would be used for parsing, and `_apply` would always throw an error;
    - if `false` then `_apply` can be used for parsing along with `_applyAsync`.
 
 4. [`_getInputs()`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#_getinputs)
 
-   Must return an array of types and values that can be processed by the shape. Elements of the returned array don't have
-   to be unique. Refer to [Introspection](#introspection) section for more details about types.
+   Must return an array of types and values that can be processed by the shape. Elements of the returned array don't
+   have to be unique. Refer to [Introspection](#introspection) section for more details about types.
 
 Let's create a custom shape that parses an input string as a number:
 
@@ -2440,9 +2444,9 @@ The table below highlights features that are unique to Doubter and its peers.
 2. Zod schemas are class instances so introspection is possible, but there's no way to get
    [a list of types accepted by a schema](#introspection).
 
-3. Zod supports [`deepPartial`](https://zod.dev/?id=deeppartial) for objects only. Doubter allows any shape to implement
-   [`DeepPartialProtocol`](#implementing-deep-partial-support) and all shapes (except for primitives) support it
-   out-of-the-box.
+3. Zod supports [`deepPartial`](https://zod.dev/?id=deeppartial) for objects only. Doubter allows any shape to
+   implement [`DeepPartialProtocol`](#implementing-deep-partial-support) and all shapes (except for primitives) support
+   it out-of-the-box.
 
 4. Zod coerces input values using wrapper constructors. Doubter uses custom converters for type coercion. For example,
    with Zod `null` is coerced to `"null"`, while with Doubter `null` is coerced to an empty string.
@@ -2667,10 +2671,10 @@ const users = new Set(['Bill']);
 
 const shape2 = d.const(users).coerce();
 
-shape1.parse([users]);
+shape2.parse([users]);
 // ⮕ users
 
-shape1.parse(new Set(['Bill']));
+shape2.parse(new Set(['Bill']));
 // ❌ ValidationError: type.set at /: Must be equal to [object Set]
 ```
 
@@ -2789,7 +2793,7 @@ const planets = {
   JUPITER: 'Jupiter',
 } as const;
 
-d.enum(plants);
+d.enum(planets);
 // ⮕ Shape<'Mars', 'Pluto', 'Jupiter'>
 ```
 
@@ -3017,7 +3021,7 @@ const shape = d.fn([d.string().convert(parseFloat)]);
 // ⮕ Shape<(arg: number) => any, (arg: string) => any>
 ```
 
-Note that the input and output functions described by this shape have different signatures. Let's implement of this
+Note that the input and output functions described by this shape have different signatures. Let's implement this
 function:
 
 ```ts
@@ -3117,9 +3121,9 @@ const shape = shape1.extend(shape2);
 // ⮕ Shape<{ foo: number, bar: boolean }>
 ```
 
-The intersection requires the input value to conform both shapes at the same time, it's not possible since there are no
-values that can satisfy the `string | number` type. So the type of property `foo` becomes `never` and no value would be
-able to satisfy the resulting intersection shape.
+The intersection requires the input value to conform both shapes at the same time, it's not possible since there are
+no values that can satisfy the `string | number` type. So the type of property `foo` becomes `never` and no value
+would be able to satisfy the resulting intersection shape.
 
 ```ts
 const shape = d.and([shape1, shape2]);
@@ -3131,7 +3135,8 @@ const shape = d.and([shape1, shape2]);
 [`d.lazy`](https://smikhalevski.github.io/doubter/functions/core.lazy.html) returns a
 [`LazyShape`](https://smikhalevski.github.io/doubter/classes/core.LazyShape.html) instance.
 
-With `lazy` you can declare recursive shapes. To showcase how to use it, let's create a shape that validates JSON data:
+With `lazy` you can declare recursive shapes. To showcase how to use it, let's create a shape that validates JSON
+data:
 
 <!-- prettier-ignore -->
 ```ts
@@ -3243,9 +3248,9 @@ userShape1.parse(hank);
 // ❌ ValidationError: kaputs at /friends/0
 ```
 
-By default, Doubter neither parses nor validates an object if it was already seen, and returns such object as is. This
-behaviour was chosen as the default for `d.lazy` because otherwise the result would be ambiguous when conversions are
-introduced.
+By default, Doubter neither parses nor validates an object if it was already seen, and returns such object as is.
+This behaviour was chosen as the default for `d.lazy` because otherwise the result would be ambiguous when conversions
+are introduced.
 
 ```ts
 interface Foo {
@@ -3292,12 +3297,13 @@ d.map(d.string(), d.number()).readonly();
 ```
 
 > [!NOTE]\
-> Marking a `Map` as readonly, only affects type checking. At runtime, you would still be able to set and delete items.
+> Marking a `Map` as readonly, only affects type checking. At runtime, you would still be able to set and delete
+> items.
 
 ## Coerce to a `Map`
 
-Arrays, iterables and array-like objects that withhold entry-like elements (a tuple with two elements) are converted to
-`Map` entries via `Array.from(value)`:
+Arrays, iterables and array-like objects that withhold entry-like elements (a tuple with two elements) are converted
+to `Map` entries via `Array.from(value)`:
 
 ```ts
 const shape = d.map(d.string(), d.number()).coerce();
@@ -3414,7 +3420,7 @@ d.number().nan(0).parse(NaN);
 Limit the allowed range:
 
 ```ts
-// The number must be greater than 5 and less then or equal to 10
+// The number must be greater than 5 and less than or equal to 10
 d.number().gt(0.5).lte(2.5);
 // ⮕ Shape<number>
 ```
@@ -3581,7 +3587,7 @@ Derive the new shape and override the strategy for unknown keys:
 ```ts
 const shape = d.object({ foo: d.string() }).exact();
 
-// Unknonwn keys are now preserved
+// Unknown keys are now preserved
 shape.preserve();
 ```
 
@@ -3645,8 +3651,8 @@ fooShape.extend(barShape);
 
 ## Making objects partial and required
 
-Object properties are optional if their type extends `undefined`. Derive an object shape that would have its properties
-all marked as optional:
+Object properties are optional if their type extends `undefined`. Derive an object shape that would have its
+properties all marked as optional:
 
 ```ts
 const shape1 = d.object({
@@ -3826,7 +3832,8 @@ d.set(d.string()).readonly();
 ```
 
 > [!NOTE]\
-> Marking a `Set` as readonly, only affects type checking. At runtime, you would still be able to add and delete items.
+> Marking a `Set` as readonly, only affects type checking. At runtime, you would still be able to add and delete
+> items.
 
 ## Coerce to a `Set`
 
@@ -4026,14 +4033,14 @@ Sole entrepreneur goes first:
 
 ```ts
 const entrepreneurShape = d.object({
-  bisinessType: d.const('entrepreneur'),
+  businessType: d.const('entrepreneur'),
   name: d.string(),
   age: d.number().int().gte(18),
 });
-// ⮕ Shape<{ type: 'entrepreneur', name: string, age: number }>
+// ⮕ Shape<{ businessType: 'entrepreneur', name: string, age: number }>
 ```
 
-We're going to use `bisinessType` property as the discriminator in our union. Now let's define a shape for a company:
+We're going to use `businessType` property as the discriminator in our union. Now let's define a shape for a company:
 
 <!-- prettier-ignore -->
 ```ts
@@ -4044,11 +4051,11 @@ const companyShape = d.object({
   ]),
   headcount: d.number().int().positive(),
 });
-// ⮕ Shape<{ type: 'llc' | 'corporation' | 'partneership', headcount: number }>
+// ⮕ Shape<{ businessType: 'llc' | 'corporation' | 'partnership', headcount: number }>
 ```
 
-Notice that we declared `businessType` as a composite shape. This would work just fine until shape restricts its input
-to a set of literal values.
+Notice that we declared `businessType` as a composite shape. This would work just fine until shape restricts its
+input to a set of literal values.
 
 The final step is to define a discriminated union shape:
 
@@ -4056,13 +4063,13 @@ The final step is to define a discriminated union shape:
 const businessShape = d.union([entrepreneurShape, companyShape]);
 ```
 
-`union` would detect that all object shapes in the union have the `businessType` property with distinct values and would
-enable a discriminated union optimization.
+`union` would detect that all object shapes in the union have the `businessType` property with distinct values and
+would enable a discriminated union optimization.
 
 Discriminated unions raise fewer issues because only one shape from the union can be applied to an input:
 
 ```ts
-businessType.parse({
+businessShape.parse({
   businessType: 'corporation',
   headcount: 0,
 });
@@ -4136,9 +4143,9 @@ An array of all input types and literal values that the union [accepts](#check-t
 An array of issue groups where each group contains issues raised by a separate shape in the union; or `null`.
 
 Union checks the input only against shapes that [accept](#check-that-an-input-is-accepted) the input value type. If
-there were no shapes in the union that accept the provided input value type, then `issueGroups` is `null`. For example,
-if you have a `number | string` union and parse a boolean value, there's no shape that accepts `boolean` input type. So
-the raised union issue would have `issueGroups` set to `null`.
+there were no shapes in the union that accept the provided input value type, then `issueGroups` is `null`. For
+example, if you have a `number | string` union and parse a boolean value, there's no shape that accepts `boolean`
+input type. So the raised union issue would have `issueGroups` set to `null`.
 
 `path` of issues in `issueGroups` is relative to the grouping issue.
 
@@ -4253,8 +4260,8 @@ const envShape = d
 1. Since env variables are strings, we should enable [type coercion](#type-coercion) to convert the value of
    `HELLO_DATE` to a `Date` instance.
 
-2. `NODE_ENV` is the required env variable, while `HELLO_DATE` is optional. If `HELLO_DATE` is provided and cannot be
-   [coerced to a date](#coerce-to-a-date), a validation error would be raised.
+2. `NODE_ENV` is the required env variable, while `HELLO_DATE` is optional. If `HELLO_DATE` is provided and cannot
+   be [coerced to a date](#coerce-to-a-date), a validation error would be raised.
 
 3. Unknown env variables are [stripped](#unknown-keys), so they won't be visible inside the app. This prevents an
    accidental usage of an unvalidated env variable.
@@ -4273,8 +4280,8 @@ that processes the following CLI parameters:
 node app.js --name Bill --age 42
 ```
 
-First, install [argcat](https://github.com/smikhalevski/argcat#readme), and use it to convert an array of CLI arguments
-to an object:
+First, install [argcat](https://github.com/smikhalevski/argcat#readme), and use it to convert an array of CLI
+arguments to an object:
 
 ```ts
 import { parseArgs } from 'argcat';
@@ -4295,7 +4302,7 @@ const optionsShape = d
 ```
 
 [`strip`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#strip) removes all unknown keys from
-an object. It is used here to prevent unexpected arguments to be accessible inside the app. You may want to throw
+an object. It is used here to prevent unexpected arguments from being accessible inside the app. You may want to throw
 an error if unknown keys are detected or ignore them. Refer to [Unknown keys](#unknown-keys) section to find out how
 this can be done.
 
@@ -4335,8 +4342,8 @@ type LocalStorageItems = d.Input<typeof localStorageItemsShape>;
 ```
 
 You can read more about `d.Input` and `d.Output` in [Static type inference](#static-type-inference) section. In this
-example, we don't have any [alterations](#alterations) or [conversions](#conversions), so the `localStorageItemsShape`
-has the same input and output.
+example, we don't have any [alterations](#alterations) or [conversions](#conversions), so the
+`localStorageItemsShape` has the same input and output.
 
 Now it's time to create a function that reads items in a type-safe manner:
 
@@ -4369,7 +4376,7 @@ function setItem<K extends keyof LocalStorageItems>(key: K, value: LocalStorageI
 }
 ```
 
-Note that we prevent writes of the unknown keys as well as reads. Now, let's use those functions:
+Note that we prevent writes of unknown keys as well as reads. Now, let's use those functions:
 
 ```ts
 setItem('user', { name: 'John', age: 42 });
@@ -4394,7 +4401,7 @@ const keysShape = d.enum(['foo', 'bar']).convert(value => value.toUpperCase() as
 // ⮕ Shape<'foo' | 'bar', 'FOO' | 'BAR'>
 ```
 
-Then, create a [`d.record`](#record) shape that constrains keys and values or a dictionary-like object:
+Then, create a [`d.record`](#record) shape that constrains keys and values of a dictionary-like object:
 
 ```ts
 const shape = d.record(keysShape, d.number());
