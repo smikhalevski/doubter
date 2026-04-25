@@ -45,19 +45,13 @@ import { ValidationError } from '../ValidationError.js';
 
 export const unknownInputs = Object.freeze<unknown[]>([Type.UNKNOWN]);
 
-declare const INPUT: unique symbol;
-declare const OUTPUT: unique symbol;
-
-export type INPUT = typeof INPUT;
-export type OUTPUT = typeof OUTPUT;
-
 /**
  * Extracts the shape input type.
  *
  * @template S The shape from which the input type must be inferred.
  * @group Type Inference
  */
-export type Input<S extends AnyShape> = S[INPUT];
+export type InferInput<S extends AnyShape> = S['$inferInput'];
 
 /**
  * Extracts the shape output type.
@@ -65,7 +59,7 @@ export type Input<S extends AnyShape> = S[INPUT];
  * @template S The shape from which the output type must be inferred.
  * @group Type Inference
  */
-export type Output<S extends AnyShape> = S[OUTPUT];
+export type InferOutput<S extends AnyShape> = S['$inferOutput'];
 
 /**
  * Excludes `U` from `T` only if `U` is a literal type.
@@ -111,7 +105,7 @@ export type AnyShape = Shape | Shape<never>;
  * @template RefinedValue The refined output value.
  * @group Shapes
  */
-export type RefineShape<S extends AnyShape, RefinedValue> = Shape<Input<S>, RefinedValue> & Omit<S, keyof Shape>;
+export type RefineShape<S extends AnyShape, RefinedValue> = Shape<InferInput<S>, RefinedValue> & Omit<S, keyof Shape>;
 
 /**
  * Returns the shape that brand the shape input and output.
@@ -122,8 +116,8 @@ export type RefineShape<S extends AnyShape, RefinedValue> = Shape<Input<S>, Refi
  * @group Shapes
  */
 export type BrandShape<S extends AnyShape, InputBrand, OutputBrand> = Shape<
-  Input<S> & InputBrand,
-  Output<S> & OutputBrand
+  InferInput<S> & InputBrand,
+  InferOutput<S> & OutputBrand
 > &
   Omit<S, keyof Shape>;
 
@@ -164,7 +158,7 @@ export type AllowShape<S extends AnyShape, AllowedValue> = ReplaceShape<S, Allow
  */
 export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyShape>
   extends
-    Shape<Input<BaseShape>, Output<BaseShape>>,
+    Shape<InferInput<BaseShape>, InferOutput<BaseShape>>,
     DeepPartialProtocol<NotShape<DeepPartialShape<BaseShape>, ExcludedShape>> {
   /**
    * The base shape.
@@ -186,6 +180,20 @@ export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
  */
 export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
+   * The shape input type.
+   *
+   * @internal
+   */
+  declare readonly ['$inferInput']: InputValue;
+
+  /**
+   * The shape output type.
+   *
+   * @internal
+   */
+  declare readonly ['$inferOutput']: OutputValue;
+
+  /**
    * The dictionary of shape annotations.
    *
    * @see {@link Shape.annotate}
@@ -204,9 +212,11 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Returns a sub-shape that describes a value associated with the given property name, or `null` if there's no such
    * sub-shape.
    *
-   * @param _key The key for which the sub-shape must be retrieved.
+   * @param key The key for which the sub-shape must be retrieved.
    * @returns The sub-shape or `null` if there's no such key in the shape.
    */
+  at(key: unknown): AnyShape | null;
+
   at(_key: unknown): AnyShape | null {
     return null;
   }
@@ -930,20 +940,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
 export interface Shape<InputValue, OutputValue> {
   /**
-   * The shape input type.
-   *
-   * @internal
-   */
-  readonly [INPUT]: InputValue;
-
-  /**
-   * The shape output type.
-   *
-   * @internal
-   */
-  readonly [OUTPUT]: OutputValue;
-
-  /**
    * The array of unique input types and values that are accepted by the shape.
    */
   readonly inputs: readonly unknown[];
@@ -1260,7 +1256,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
  * @group Shapes
  */
 export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape>
-  extends Shape<Input<InputShape>, Output<OutputShape>>
+  extends Shape<InferInput<InputShape>, InferOutput<OutputShape>>
   implements DeepPartialProtocol<PipeShape<DeepPartialShape<InputShape>, DeepPartialShape<OutputShape>>>
 {
   /**
@@ -1296,7 +1292,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
     return this.inputShape.inputs.slice(0);
   }
 
-  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<Output<OutputShape>> {
+  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<InferOutput<OutputShape>> {
     const { inputShape, outputShape } = this;
 
     let output = input;
@@ -1321,7 +1317,11 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
     return this._applyOperations(input, output, options, null) as Result;
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions, nonce: number): Promise<Result<Output<OutputShape>>> {
+  protected _applyAsync(
+    input: unknown,
+    options: ParseOptions,
+    nonce: number
+  ): Promise<Result<InferOutput<OutputShape>>> {
     return this.inputShape['_applyAsync'](input, options, nonce).then(inputResult => {
       let output = input;
 
@@ -1354,7 +1354,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
  * @group Shapes
  */
 export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
-  extends Shape<Input<BaseShape> | InputValue, ExcludeLiteral<Output<BaseShape>, InputValue> | OutputValue>
+  extends Shape<InferInput<BaseShape> | InputValue, ExcludeLiteral<InferOutput<BaseShape>, InputValue> | OutputValue>
   implements DeepPartialProtocol<ReplaceShape<DeepPartialShape<BaseShape>, InputValue, OutputValue>>
 {
   private _result: Result<OutputValue>;
@@ -1404,7 +1404,7 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
     input: unknown,
     options: ParseOptions,
     nonce: number
-  ): Result<ExcludeLiteral<Output<BaseShape>, InputValue> | OutputValue> {
+  ): Result<ExcludeLiteral<InferOutput<BaseShape>, InputValue> | OutputValue> {
     let output = input;
 
     const result = isEqual(input, this.inputValue) ? this._result : this.baseShape['_apply'](input, options, nonce);
@@ -1422,7 +1422,7 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
     input: unknown,
     options: ParseOptions,
     nonce: number
-  ): Promise<Result<ExcludeLiteral<Output<BaseShape>, InputValue> | OutputValue>> {
+  ): Promise<Result<ExcludeLiteral<InferOutput<BaseShape>, InputValue> | OutputValue>> {
     const handleResult = (result: Result) => {
       let output = input;
 
@@ -1450,7 +1450,7 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
  * @group Shapes
  */
 export class DenyShape<BaseShape extends AnyShape, DeniedValue>
-  extends Shape<ExcludeLiteral<Input<BaseShape>, DeniedValue>, ExcludeLiteral<Output<BaseShape>, DeniedValue>>
+  extends Shape<ExcludeLiteral<InferInput<BaseShape>, DeniedValue>, ExcludeLiteral<InferOutput<BaseShape>, DeniedValue>>
   implements DeepPartialProtocol<DenyShape<DeepPartialShape<BaseShape>, DeniedValue>>
 {
   /**
@@ -1499,7 +1499,7 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
     input: unknown,
     options: ParseOptions,
     nonce: number
-  ): Result<ExcludeLiteral<Output<BaseShape>, DeniedValue>> {
+  ): Result<ExcludeLiteral<InferOutput<BaseShape>, DeniedValue>> {
     const { deniedValue } = this;
 
     if (isEqual(input, deniedValue)) {
@@ -1527,7 +1527,7 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
     input: unknown,
     options: ParseOptions,
     nonce: number
-  ): Promise<Result<ExcludeLiteral<Output<BaseShape>, DeniedValue>>> {
+  ): Promise<Result<ExcludeLiteral<InferOutput<BaseShape>, DeniedValue>>> {
     const { deniedValue } = this;
 
     if (isEqual(input, deniedValue)) {
@@ -1562,7 +1562,7 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
  * @group Shapes
  */
 export class CatchShape<BaseShape extends AnyShape, FallbackValue>
-  extends Shape<Input<BaseShape>, Output<BaseShape> | FallbackValue>
+  extends Shape<InferInput<BaseShape>, InferOutput<BaseShape> | FallbackValue>
   implements DeepPartialProtocol<CatchShape<DeepPartialShape<BaseShape>, FallbackValue>>
 {
   private _resultProvider: (input: unknown, issues: Issue[], options: ParseOptions) => Ok<FallbackValue>;
@@ -1609,7 +1609,11 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     return this.baseShape.inputs.slice(0);
   }
 
-  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<Output<BaseShape> | FallbackValue> {
+  protected _apply(
+    input: unknown,
+    options: ParseOptions,
+    nonce: number
+  ): Result<InferOutput<BaseShape> | FallbackValue> {
     let output = input;
     let result = this.baseShape['_apply'](input, options, nonce);
 
@@ -1630,7 +1634,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     input: unknown,
     options: ParseOptions,
     nonce: number
-  ): Promise<Result<Output<BaseShape> | FallbackValue>> {
+  ): Promise<Result<InferOutput<BaseShape> | FallbackValue>> {
     return this.baseShape['_applyAsync'](input, options, nonce).then(result => {
       let output = input;
 
@@ -1657,7 +1661,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
  * @group Shapes
  */
 export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyShape>
-  extends Shape<Input<BaseShape>, Exclude<Output<BaseShape>, Input<ExcludedShape>>>
+  extends Shape<InferInput<BaseShape>, Exclude<InferOutput<BaseShape>, InferInput<ExcludedShape>>>
   implements DeepPartialProtocol<ExcludeShape<DeepPartialShape<BaseShape>, ExcludedShape>>
 {
   /**
@@ -1706,7 +1710,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     input: unknown,
     options: ParseOptions,
     nonce: number
-  ): Result<Exclude<Output<BaseShape>, Input<ExcludedShape>>> {
+  ): Result<Exclude<InferOutput<BaseShape>, InferInput<ExcludedShape>>> {
     const { baseShape, excludedShape } = this;
 
     let output = input;
@@ -1729,7 +1733,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     input: unknown,
     options: ParseOptions,
     nonce: number
-  ): Promise<Result<Exclude<Output<BaseShape>, Input<ExcludedShape>>>> {
+  ): Promise<Result<Exclude<InferOutput<BaseShape>, InferInput<ExcludedShape>>>> {
     const { baseShape, excludedShape } = this;
 
     return baseShape['_applyAsync'](input, options, nonce).then(result => {

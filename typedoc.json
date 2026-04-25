@@ -73,8 +73,8 @@
     "InferOrDefault",
     "ThisType",
     "ToReadonly",
-    "INPUT",
-    "OUTPUT"
+    "'$inferInput'",
+    "'$inferOutput'"
   ],
   "plugin": ["typedoc-plugin-mdn-links"],
   "externalSymbolLinkMappings": {

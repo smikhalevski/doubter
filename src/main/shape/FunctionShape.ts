@@ -13,7 +13,7 @@ import { Type } from '../Type.js';
 import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
 import { ValidationError } from '../ValidationError.js';
-import { AnyShape, INPUT, Input, OUTPUT, Output, Shape } from './Shape.js';
+import { AnyShape, InferInput, InferOutput, Shape } from './Shape.js';
 
 const functionInputs = Object.freeze<unknown[]>([Type.FUNCTION]);
 
@@ -24,9 +24,9 @@ const KEY_RETURN = 'return';
 // prettier-ignore
 type InferOrDefault<
   Shape extends AnyShape | null,
-  Leg extends INPUT | OUTPUT,
+  InferSide extends '$inferInput' | '$inferOutput',
   DefaultValue = any,
-> = Shape extends null | undefined ? DefaultValue : Shape extends AnyShape ? Shape[Leg] : DefaultValue;
+> = Shape extends null | undefined ? DefaultValue : Shape extends AnyShape ? Shape[InferSide] : DefaultValue;
 
 type ThisType<F> = F extends (this: infer T, ...args: any[]) => any ? T : any;
 
@@ -43,8 +43,14 @@ export class FunctionShape<
   ReturnShape extends AnyShape | null,
   ThisShape extends AnyShape | null,
 > extends Shape<
-  (this: InferOrDefault<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => InferOrDefault<ReturnShape, INPUT>,
-  (this: InferOrDefault<ThisShape, INPUT>, ...args: Input<ArgsShape>) => InferOrDefault<ReturnShape, OUTPUT>
+  (
+    this: InferOrDefault<ThisShape, '$inferOutput'>,
+    ...args: InferOutput<ArgsShape>
+  ) => InferOrDefault<ReturnShape, '$inferInput'>,
+  (
+    this: InferOrDefault<ThisShape, '$inferInput'>,
+    ...args: InferInput<ArgsShape>
+  ) => InferOrDefault<ReturnShape, '$inferOutput'>
 > {
   /**
    * `true` if input functions are wrapped during parsing to ensure runtime signature type-safety, or `false` otherwise.
@@ -148,16 +154,16 @@ export class FunctionShape<
    */
   ensure<
     F extends (
-      this: InferOrDefault<ThisShape, OUTPUT>,
-      ...args: Output<ArgsShape>
-    ) => InferOrDefault<ReturnShape, INPUT>,
+      this: InferOrDefault<ThisShape, '$inferOutput'>,
+      ...args: InferOutput<ArgsShape>
+    ) => InferOrDefault<ReturnShape, '$inferInput'>,
   >(
     fn: F,
     options?: ParseOptions
   ): (
-    this: InferOrDefault<ThisShape, INPUT, ThisType<F>>,
-    ...args: Input<ArgsShape>
-  ) => InferOrDefault<ReturnShape, OUTPUT, ReturnType<F>>;
+    this: InferOrDefault<ThisShape, '$inferInput', ThisType<F>>,
+    ...args: InferInput<ArgsShape>
+  ) => InferOrDefault<ReturnShape, '$inferOutput', ReturnType<F>>;
 
   ensure(fn: Function, options?: ParseOptions) {
     if (this.isAsyncFunction) {
@@ -200,16 +206,16 @@ export class FunctionShape<
    */
   ensureAsync<
     F extends (
-      this: InferOrDefault<ThisShape, OUTPUT>,
-      ...args: Output<ArgsShape>
-    ) => Awaitable<InferOrDefault<ReturnShape, INPUT>>,
+      this: InferOrDefault<ThisShape, '$inferOutput'>,
+      ...args: InferOutput<ArgsShape>
+    ) => Awaitable<InferOrDefault<ReturnShape, '$inferInput'>>,
   >(
     fn: F,
     options?: ParseOptions
   ): (
-    this: InferOrDefault<ThisShape, INPUT, ThisType<F>>,
-    ...args: Input<ArgsShape>
-  ) => Promisify<InferOrDefault<ReturnShape, OUTPUT, ReturnType<F>>>;
+    this: InferOrDefault<ThisShape, '$inferInput', ThisType<F>>,
+    ...args: InferInput<ArgsShape>
+  ) => Promisify<InferOrDefault<ReturnShape, '$inferOutput', ReturnType<F>>>;
 
   ensureAsync(fn: Function, options?: ParseOptions) {
     const { argsShape, returnShape, thisShape } = this;
@@ -258,7 +264,10 @@ export class FunctionShape<
     options: ParseOptions,
     _nonce: number
   ): Result<
-    (this: InferOrDefault<ThisShape, INPUT>, ...args: Input<ArgsShape>) => InferOrDefault<ReturnShape, OUTPUT>
+    (
+      this: InferOrDefault<ThisShape, '$inferInput'>,
+      ...args: InferInput<ArgsShape>
+    ) => InferOrDefault<ReturnShape, '$inferOutput'>
   > {
     if (typeof input !== 'function') {
       return [createIssue(CODE_TYPE_FUNCTION, input, MESSAGE_TYPE_FUNCTION, undefined, options, this._options)];
@@ -280,7 +289,12 @@ export class FunctionShape<
     options: ParseOptions,
     _nonce: number
   ): Promise<
-    Result<(this: InferOrDefault<ThisShape, INPUT>, ...args: Input<ArgsShape>) => InferOrDefault<ReturnShape, OUTPUT>>
+    Result<
+      (
+        this: InferOrDefault<ThisShape, '$inferInput'>,
+        ...args: InferInput<ArgsShape>
+      ) => InferOrDefault<ReturnShape, '$inferOutput'>
+    >
   > {
     return new Promise(resolve => {
       if (typeof input !== 'function') {

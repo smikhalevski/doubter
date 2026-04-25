@@ -3,7 +3,7 @@ import { identity, isArray } from '../internal/lang.js';
 import { defineReadonlyProperty } from '../internal/objects.js';
 import { captureIssues, copyOperations, ok, toDeepPartialShape } from '../internal/shapes.js';
 import { Any, ParseOptions, Result } from '../types.js';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape.js';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, InferInput, InferOutput, Shape } from './Shape.js';
 
 /**
  * Lazily loads a shape using the provider callback.
@@ -13,7 +13,7 @@ import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape }
  * @group Shapes
  */
 export class LazyShape<ProvidedShape extends AnyShape, Pointer>
-  extends Shape<Input<ProvidedShape>, Output<ProvidedShape> | Pointer>
+  extends Shape<InferInput<ProvidedShape>, InferOutput<ProvidedShape> | Pointer>
   implements DeepPartialProtocol<LazyShape<DeepPartialShape<ProvidedShape>, Pointer>>
 {
   /**
@@ -44,7 +44,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     /**
      * The provider callback that returns the value that is used instead of a circular reference.
      */
-    readonly pointerProvider: (value: Input<ProvidedShape>, options: ParseOptions) => Pointer
+    readonly pointerProvider: (value: InferInput<ProvidedShape>, options: ParseOptions) => Pointer
   ) {
     super();
 
@@ -72,7 +72,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     return this.providedShape.at(key);
   }
 
-  deepPartial(): LazyShape<DeepPartialShape<ProvidedShape>, Input<DeepPartialShape<ProvidedShape>>> {
+  deepPartial(): LazyShape<DeepPartialShape<ProvidedShape>, InferInput<DeepPartialShape<ProvidedShape>>> {
     const { _cachingShapeProvider } = this;
 
     return new LazyShape(() => toDeepPartialShape(_cachingShapeProvider()), identity);
@@ -87,7 +87,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
    * @returns The clone of the shape.
    */
   circular<Pointer extends Any>(
-    pointer: Pointer | ((value: Input<ProvidedShape>, options: ParseOptions) => Pointer)
+    pointer: Pointer | ((value: InferInput<ProvidedShape>, options: ParseOptions) => Pointer)
   ): LazyShape<ProvidedShape, Pointer> {
     return copyOperations(
       this,
@@ -109,7 +109,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     return shape;
   }
 
-  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<Output<ProvidedShape> | Pointer> {
+  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<InferOutput<ProvidedShape> | Pointer> {
     const { _seenInputsMap } = this;
 
     let output = input;
@@ -149,7 +149,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     input: unknown,
     options: ParseOptions,
     nonce: number
-  ): Promise<Result<Output<ProvidedShape> | Pointer>> {
+  ): Promise<Result<InferOutput<ProvidedShape> | Pointer>> {
     const { _seenInputsMap } = this;
 
     let output = input;

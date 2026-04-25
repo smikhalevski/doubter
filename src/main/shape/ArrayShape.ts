@@ -8,15 +8,7 @@ import { Type } from '../Type.js';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
 import { ReadonlyShape } from './ReadonlyShape.js';
-import {
-  AnyShape,
-  DeepPartialProtocol,
-  INPUT,
-  OptionalDeepPartialShape,
-  OUTPUT,
-  Shape,
-  unknownInputs,
-} from './Shape.js';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape.js';
 
 const arrayInputs = Object.freeze<unknown[]>([Type.ARRAY]);
 const arrayCoercibleInputs = Object.freeze<unknown[]>([Type.OBJECT, Type.ARRAY]);
@@ -24,10 +16,10 @@ const arrayCoercibleInputs = Object.freeze<unknown[]>([Type.OBJECT, Type.ARRAY])
 type InferArray<
   HeadShapes extends readonly AnyShape[],
   RestShape extends AnyShape | null,
-  Leg extends INPUT | OUTPUT,
+  InferSide extends '$inferInput' | '$inferOutput',
 > = [
-  ...{ [K in keyof HeadShapes]: HeadShapes[K][Leg] },
-  ...(RestShape extends null | undefined ? [] : RestShape extends Shape ? RestShape[Leg][] : []),
+  ...{ [K in keyof HeadShapes]: HeadShapes[K][InferSide] },
+  ...(RestShape extends null | undefined ? [] : RestShape extends Shape ? RestShape[InferSide][] : []),
 ];
 
 type DeepPartialArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> = ArrayShape<
@@ -50,7 +42,7 @@ type DeepPartialArrayShape<HeadShapes extends readonly AnyShape[], RestShape ext
  * @group Shapes
  */
 export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null>
-  extends Shape<InferArray<HeadShapes, RestShape, INPUT>, InferArray<HeadShapes, RestShape, OUTPUT>>
+  extends Shape<InferArray<HeadShapes, RestShape, '$inferInput'>, InferArray<HeadShapes, RestShape, '$inferOutput'>>
   implements DeepPartialProtocol<DeepPartialArrayShape<HeadShapes, RestShape>>
 {
   /**
@@ -165,7 +157,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     input: any,
     options: ParseOptions,
     nonce: number
-  ): Result<InferArray<HeadShapes, RestShape, OUTPUT>> {
+  ): Result<InferArray<HeadShapes, RestShape, '$inferOutput'>> {
     const { headShapes, restShape, operations } = this;
 
     let output = input;
@@ -220,7 +212,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     input: any,
     options: ParseOptions,
     nonce: number
-  ): Promise<Result<InferArray<HeadShapes, RestShape, OUTPUT>>> {
+  ): Promise<Result<InferArray<HeadShapes, RestShape, '$inferOutput'>>> {
     return new Promise(resolve => {
       const { headShapes, restShape, operations } = this;
 

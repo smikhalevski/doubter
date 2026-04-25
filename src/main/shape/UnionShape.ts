@@ -8,7 +8,7 @@ import { Type } from '../Type.js';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
 import { ObjectShape } from './ObjectShape.js';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape.js';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, InferInput, InferOutput, Shape } from './Shape.js';
 
 type DeepPartialUnionShape<Shapes extends readonly AnyShape[]> = UnionShape<{
   [K in keyof Shapes]: DeepPartialShape<Shapes[K]>;
@@ -21,7 +21,7 @@ type DeepPartialUnionShape<Shapes extends readonly AnyShape[]> = UnionShape<{
  * @group Shapes
  */
 export class UnionShape<Shapes extends readonly AnyShape[]>
-  extends Shape<Input<Shapes[number]>, Output<Shapes[number]>>
+  extends Shape<InferInput<Shapes[number]>, InferOutput<Shapes[number]>>
   implements DeepPartialProtocol<DeepPartialUnionShape<Shapes>>
 {
   /**
@@ -91,7 +91,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     return inputs;
   }
 
-  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<Output<Shapes[number]>> {
+  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<InferOutput<Shapes[number]>> {
     let result = null;
     let output = input;
     let issues = null;
@@ -138,7 +138,11 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     return this._applyOperations(input, output, options, null) as Result;
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions, nonce: number): Promise<Result<Output<Shapes[number]>>> {
+  protected _applyAsync(
+    input: unknown,
+    options: ParseOptions,
+    nonce: number
+  ): Promise<Result<InferOutput<Shapes[number]>>> {
     return new Promise(resolve => {
       const shapes = this._lookup(input);
       const shapesLength = shapes.length;

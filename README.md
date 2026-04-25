@@ -221,7 +221,7 @@ userShape.parse({
 If you are using TypeScript, you can infer the type of the value that the shape describes:
 
 ```ts
-type User = d.Input<typeof userShape>;
+type User = d.InferInput<typeof userShape>;
 
 const user: User = {
   name: 'Dan Aykroyd',
@@ -442,10 +442,10 @@ shape2.parse(undefined);
 Infer the input and output types of `shape2`:
 
 ```ts
-type Shape2Input = d.Input<typeof shape2>;
+type Shape2Input = d.InferInput<typeof shape2>;
 // ⮕ string | undefined
 
-type Shape2Output = d.Output<typeof shape2>;
+type Shape2Output = d.InferOutput<typeof shape2>;
 // ⮕ string
 ```
 
@@ -1611,7 +1611,7 @@ refinements:
 const flightCodeShape = d.string().brand<{ __brand__: 'FlightCode' }>();
 // ⮕ Shape<string, FlightCode>
 
-type FlightCode = d.Output<typeof flightCodeShape>;
+type FlightCode = d.InferOutput<typeof flightCodeShape>;
 // ⮕ string & { __brand__: 'FlightCode' }
 
 // 🟡 Note that the argument type isn't a plain string
@@ -4338,10 +4338,10 @@ const localStorageItemsShape = d.object({
 Let's infer a type of the data in the `localStorage`:
 
 ```ts
-type LocalStorageItems = d.Input<typeof localStorageItemsShape>;
+type LocalStorageItems = d.InferInput<typeof localStorageItemsShape>;
 ```
 
-You can read more about `d.Input` and `d.Output` in [Static type inference](#static-type-inference) section. In this
+You can read more about `d.InferInput` and `d.InferOutput` in [Static type inference](#static-type-inference) section. In this
 example, we don't have any [alterations](#alterations) or [conversions](#conversions), so the
 `localStorageItemsShape` has the same input and output.
 

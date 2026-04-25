@@ -5,20 +5,12 @@ import { applyShape, Promisify, toDeepPartialShape } from '../internal/shapes.js
 import { Type } from '../Type.js';
 import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
-import {
-  AnyShape,
-  DeepPartialProtocol,
-  INPUT,
-  OptionalDeepPartialShape,
-  OUTPUT,
-  Shape,
-  unknownInputs,
-} from './Shape.js';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape.js';
 
 const promiseInputs = Object.freeze<unknown[]>([Type.PROMISE]);
 
-type InferPromise<ValueShape extends AnyShape | null, Leg extends INPUT | OUTPUT> = Promisify<
-  ValueShape extends null | undefined ? any : ValueShape extends AnyShape ? ValueShape[Leg] : any
+type InferPromise<ValueShape extends AnyShape | null, InferSide extends '$inferInput' | '$inferOutput'> = Promisify<
+  ValueShape extends null | undefined ? any : ValueShape extends AnyShape ? ValueShape[InferSide] : any
 >;
 
 type DeepPartialPromiseShape<ValueShape extends AnyShape | null> = PromiseShape<
@@ -32,7 +24,7 @@ type DeepPartialPromiseShape<ValueShape extends AnyShape | null> = PromiseShape<
  * @group Shapes
  */
 export class PromiseShape<ValueShape extends AnyShape | null>
-  extends Shape<InferPromise<ValueShape, INPUT>, InferPromise<ValueShape, OUTPUT>>
+  extends Shape<InferPromise<ValueShape, '$inferInput'>, InferPromise<ValueShape, '$inferOutput'>>
   implements DeepPartialProtocol<DeepPartialPromiseShape<ValueShape>>
 {
   /**
@@ -92,7 +84,11 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     return this.valueShape.inputs.concat(Type.PROMISE);
   }
 
-  protected _apply(input: any, options: ParseOptions, _nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
+  protected _apply(
+    input: any,
+    options: ParseOptions,
+    _nonce: number
+  ): Result<InferPromise<ValueShape, '$inferOutput'>> {
     let output = input;
 
     if (!(input instanceof Promise) && (!this.isCoercing || (output = coerceToPromise(input)) === NEVER)) {
@@ -105,7 +101,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     input: any,
     options: ParseOptions,
     nonce: number
-  ): Promise<Result<InferPromise<ValueShape, OUTPUT>>> {
+  ): Promise<Result<InferPromise<ValueShape, '$inferOutput'>>> {
     let output = input;
 
     if (!(input instanceof Promise) && (!this.isCoercing || (output = coerceToPromise(input)) === NEVER)) {

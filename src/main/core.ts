@@ -60,9 +60,9 @@ export type {
   AnyShape,
   DeepPartialProtocol,
   DeepPartialShape,
-  Input,
+  InferInput,
   NotShape,
-  Output,
+  InferOutput,
   RefineShape,
 } from './shape/Shape.js';
 export type * from './types.js';

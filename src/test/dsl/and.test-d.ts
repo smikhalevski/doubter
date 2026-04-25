@@ -1,11 +1,8 @@
 import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
-import { type OUTPUT } from '../../main/shape/Shape.js';
-
-declare const OUTPUT: OUTPUT;
 
 test('expected type', () => {
-  expectTypeOf(d.and([d.object({ key1: d.string() }), d.object({ key2: d.number() })])[OUTPUT]).toEqualTypeOf<
+  expectTypeOf(d.and([d.object({ key1: d.string() }), d.object({ key2: d.number() })])['$inferOutput']).toEqualTypeOf<
     { key1: string } & { key2: number }
   >();
 
@@ -19,7 +16,7 @@ test('expected type', () => {
           bbb: d.number(),
         }),
       ])
-      .deepPartial()[OUTPUT]
+      .deepPartial()['$inferOutput']
   ).toEqualTypeOf<{ aaa?: string } & { bbb?: number }>();
 
   expectTypeOf(
@@ -32,6 +29,6 @@ test('expected type', () => {
           bbb: d.number(),
         }),
       ])
-      .deepPartial()[OUTPUT]
+      .deepPartial()['$inferOutput']
   ).toEqualTypeOf<{ aaa?: Array<string | undefined> } & { bbb?: number }>();
 });

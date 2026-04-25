@@ -2,7 +2,7 @@ import { isArray, isPlainObject } from '../internal/lang.js';
 import { cloneObject } from '../internal/objects.js';
 import { toDeepPartialShape } from '../internal/shapes.js';
 import { ParseOptions, Result } from '../types.js';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape.js';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, InferInput, InferOutput, Shape } from './Shape.js';
 
 // prettier-ignore
 type ToReadonly<T> =
@@ -21,7 +21,7 @@ type ToReadonly<T> =
  * @group Shapes
  */
 export class ReadonlyShape<BaseShape extends AnyShape>
-  extends Shape<Input<BaseShape>, ToReadonly<Output<BaseShape>>>
+  extends Shape<InferInput<BaseShape>, ToReadonly<InferOutput<BaseShape>>>
   implements DeepPartialProtocol<ReadonlyShape<DeepPartialShape<BaseShape>>>
 {
   /**
@@ -51,7 +51,7 @@ export class ReadonlyShape<BaseShape extends AnyShape>
     return this.baseShape.inputs;
   }
 
-  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<ToReadonly<Output<BaseShape>>> {
+  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<ToReadonly<InferOutput<BaseShape>>> {
     let output = input;
     let result = this.baseShape['_apply'](input, options, nonce);
 

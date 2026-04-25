@@ -15,26 +15,17 @@ import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js'
 import { createIssue } from '../utils.js';
 import { EnumShape } from './EnumShape.js';
 import { ReadonlyShape } from './ReadonlyShape.js';
-import {
-  AllowShape,
-  AnyShape,
-  DeepPartialProtocol,
-  DenyShape,
-  INPUT,
-  OptionalDeepPartialShape,
-  OUTPUT,
-  Shape,
-} from './Shape.js';
+import { AllowShape, AnyShape, DeepPartialProtocol, DenyShape, OptionalDeepPartialShape, Shape } from './Shape.js';
 
 const objectInputs = Object.freeze<unknown[]>([Type.OBJECT]);
 
 type InferObject<
   PropShapes extends ReadonlyDict<AnyShape>,
   RestShape extends AnyShape | null,
-  Leg extends INPUT | OUTPUT,
+  InferSide extends '$inferInput' | '$inferOutput',
 > = Prettify<
-  UndefinedToOptional<{ [K in keyof PropShapes]: PropShapes[K][Leg] }> &
-    (RestShape extends null | undefined ? {} : RestShape extends Shape ? { [key: string]: RestShape[Leg] } : {})
+  UndefinedToOptional<{ [K in keyof PropShapes]: PropShapes[K][InferSide] }> &
+    (RestShape extends null | undefined ? {} : RestShape extends Shape ? { [key: string]: RestShape[InferSide] } : {})
 >;
 
 type UndefinedToOptional<T> = Omit<T, OptionalKeys<T>> & { [K in OptionalKeys<T>]?: T[K] };
@@ -84,7 +75,7 @@ export type ObjectKeysMode = 'preserved' | 'stripped' | 'exact';
  * @group Shapes
  */
 export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null>
-  extends Shape<InferObject<PropShapes, RestShape, INPUT>, InferObject<PropShapes, RestShape, OUTPUT>>
+  extends Shape<InferObject<PropShapes, RestShape, '$inferInput'>, InferObject<PropShapes, RestShape, '$inferOutput'>>
   implements DeepPartialProtocol<DeepPartialObjectShape<PropShapes, RestShape>>
 {
   /**
@@ -380,7 +371,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     input: any,
     options: ParseOptions,
     nonce: number
-  ): Result<InferObject<PropShapes, RestShape, OUTPUT>> {
+  ): Result<InferObject<PropShapes, RestShape, '$inferOutput'>> {
     if (!isObject(input)) {
       return [createIssue(CODE_TYPE_OBJECT, input, MESSAGE_TYPE_OBJECT, undefined, options, this._options)];
     }
@@ -395,7 +386,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     input: any,
     options: ParseOptions,
     nonce: number
-  ): Promise<Result<InferObject<PropShapes, RestShape, OUTPUT>>> {
+  ): Promise<Result<InferObject<PropShapes, RestShape, '$inferOutput'>>> {
     return new Promise(resolve => {
       if (!isObject(input)) {
         resolve([createIssue(CODE_TYPE_OBJECT, input, MESSAGE_TYPE_OBJECT, undefined, options, this._options)]);

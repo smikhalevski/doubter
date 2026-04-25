@@ -7,7 +7,7 @@ import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal
 import { Type } from '../Type.js';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
-import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output, Shape } from './Shape.js';
+import { AnyShape, DeepPartialProtocol, InferInput, OptionalDeepPartialShape, InferOutput, Shape } from './Shape.js';
 import { ReadonlyShape } from './ReadonlyShape.js';
 
 const setInputs = Object.freeze<unknown[]>([Type.SET]);
@@ -19,7 +19,7 @@ const setInputs = Object.freeze<unknown[]>([Type.SET]);
  * @group Shapes
  */
 export class SetShape<ValueShape extends AnyShape>
-  extends Shape<Set<Input<ValueShape>>, Set<Output<ValueShape>>>
+  extends Shape<Set<InferInput<ValueShape>>, Set<InferOutput<ValueShape>>>
   implements DeepPartialProtocol<SetShape<OptionalDeepPartialShape<ValueShape>>>
 {
   /**
@@ -87,7 +87,7 @@ export class SetShape<ValueShape extends AnyShape>
     return this.isCoercing ? this.valueShape.inputs.concat(Type.SET, Type.OBJECT, Type.ARRAY) : setInputs;
   }
 
-  protected _apply(input: any, options: ParseOptions, nonce: number): Result<Set<Output<ValueShape>>> {
+  protected _apply(input: any, options: ParseOptions, nonce: number): Result<Set<InferOutput<ValueShape>>> {
     let isChanged = false;
     let values;
     let issues = null;
@@ -127,7 +127,11 @@ export class SetShape<ValueShape extends AnyShape>
     return this._applyOperations(input, isChanged ? new Set(values) : input, options, issues) as Result;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions, nonce: number): Promise<Result<Set<Output<ValueShape>>>> {
+  protected _applyAsync(
+    input: any,
+    options: ParseOptions,
+    nonce: number
+  ): Promise<Result<Set<InferOutput<ValueShape>>>> {
     return new Promise(resolve => {
       let isChanged = false;
       let values;

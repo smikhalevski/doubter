@@ -1,62 +1,60 @@
 import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
-import { type INPUT, type OUTPUT } from '../../main/shape/Shape.js';
-
-declare const INPUT: INPUT;
-declare const OUTPUT: OUTPUT;
 
 test('alias', () => {
-  expectTypeOf(d.function()[OUTPUT]).toEqualTypeOf<() => any>();
+  expectTypeOf(d.function()['$inferOutput']).toEqualTypeOf<() => any>();
 });
 
 test('arguments', () => {
-  expectTypeOf(d.fn()[OUTPUT]).toEqualTypeOf<() => any>();
+  expectTypeOf(d.fn()['$inferOutput']).toEqualTypeOf<() => any>();
 
-  expectTypeOf(d.fn([d.string()])[OUTPUT]).toEqualTypeOf<(arg: string) => any>();
+  expectTypeOf(d.fn([d.string()])['$inferOutput']).toEqualTypeOf<(arg: string) => any>();
 
-  expectTypeOf(d.fn([d.string(), d.number()])[OUTPUT]).toEqualTypeOf<(arg1: string, arg2: number) => any>();
+  expectTypeOf(d.fn([d.string(), d.number()])['$inferOutput']).toEqualTypeOf<(arg1: string, arg2: number) => any>();
 
-  expectTypeOf(d.fn(d.tuple([d.string()]))[OUTPUT]).toEqualTypeOf<(arg: string) => any>();
+  expectTypeOf(d.fn(d.tuple([d.string()]))['$inferOutput']).toEqualTypeOf<(arg: string) => any>();
 
-  expectTypeOf(d.fn(d.tuple([d.string(), d.number()]))[OUTPUT]).toEqualTypeOf<(arg1: string, arg2: number) => any>();
+  expectTypeOf(d.fn(d.tuple([d.string(), d.number()]))['$inferOutput']).toEqualTypeOf<
+    (arg1: string, arg2: number) => any
+  >();
 
-  expectTypeOf(d.fn(d.tuple([d.string(), d.number()]).rest(d.boolean()))[OUTPUT]).toEqualTypeOf<
+  expectTypeOf(d.fn(d.tuple([d.string(), d.number()]).rest(d.boolean()))['$inferOutput']).toEqualTypeOf<
     (arg1: string, arg2: number, ...args: boolean[]) => any
   >();
 
-  expectTypeOf(d.fn(d.array())[OUTPUT]).toEqualTypeOf<(...args: any[]) => any>();
+  expectTypeOf(d.fn(d.array())['$inferOutput']).toEqualTypeOf<(...args: any[]) => any>();
 
-  expectTypeOf(d.fn(d.array(d.string()))[OUTPUT]).toEqualTypeOf<(...args: string[]) => any>();
+  expectTypeOf(d.fn(d.array(d.string()))['$inferOutput']).toEqualTypeOf<(...args: string[]) => any>();
 
-  expectTypeOf(d.fn(d.or([d.array(d.string()), d.tuple([d.string(), d.number()])]))[OUTPUT]).toEqualTypeOf<
+  expectTypeOf(d.fn(d.or([d.array(d.string()), d.tuple([d.string(), d.number()])]))['$inferOutput']).toEqualTypeOf<
     (...args: string[] | [string, number]) => any
   >();
 
-  expectTypeOf(d.fn([d.string().convert(parseFloat)])[OUTPUT]).toEqualTypeOf<(arg: string) => any>();
+  expectTypeOf(d.fn([d.string().convert(parseFloat)])['$inferOutput']).toEqualTypeOf<(arg: string) => any>();
 
-  expectTypeOf(d.fn([d.string().convert(parseFloat)])[INPUT]).toEqualTypeOf<(arg: number) => any>();
+  expectTypeOf(d.fn([d.string().convert(parseFloat)])['$inferInput']).toEqualTypeOf<(arg: number) => any>();
 
-  expectTypeOf(d.fn([d.string().convert(parseFloat)])[INPUT]).toEqualTypeOf<(arg: number) => any>();
+  expectTypeOf(d.fn([d.string().convert(parseFloat)])['$inferInput']).toEqualTypeOf<(arg: number) => any>();
 
-  expectTypeOf(d.fn([d.string().convert(parseFloat)])[OUTPUT]).toEqualTypeOf<(arg: string) => any>();
+  expectTypeOf(d.fn([d.string().convert(parseFloat)])['$inferOutput']).toEqualTypeOf<(arg: string) => any>();
 });
 
 test('return', () => {
-  expectTypeOf(d.fn().return(d.string())[OUTPUT]).toEqualTypeOf<() => string>();
+  expectTypeOf(d.fn().return(d.string())['$inferOutput']).toEqualTypeOf<() => string>();
 
-  expectTypeOf(d.fn().return(d.promise(d.string()))[OUTPUT]).toEqualTypeOf<() => Promise<string>>();
+  expectTypeOf(d.fn().return(d.promise(d.string()))['$inferOutput']).toEqualTypeOf<() => Promise<string>>();
 
-  expectTypeOf(d.fn().return(d.string().convert(parseFloat))[INPUT]).toEqualTypeOf<() => string>();
+  expectTypeOf(d.fn().return(d.string().convert(parseFloat))['$inferInput']).toEqualTypeOf<() => string>();
 
-  expectTypeOf(d.fn().return(d.string().convert(parseFloat))[OUTPUT]).toEqualTypeOf<() => number>();
+  expectTypeOf(d.fn().return(d.string().convert(parseFloat))['$inferOutput']).toEqualTypeOf<() => number>();
 });
 
 test('this', () => {
-  expectTypeOf(d.fn().this(d.string())[OUTPUT]).toEqualTypeOf<(this: string) => any>();
+  expectTypeOf(d.fn().this(d.string())['$inferOutput']).toEqualTypeOf<(this: string) => any>();
 
-  expectTypeOf(d.fn().this(d.string().convert(parseFloat))[INPUT]).toEqualTypeOf<(this: number) => any>();
+  expectTypeOf(d.fn().this(d.string().convert(parseFloat))['$inferInput']).toEqualTypeOf<(this: number) => any>();
 
-  expectTypeOf(d.fn().this(d.string().convert(parseFloat))[OUTPUT]).toEqualTypeOf<(this: string) => any>();
+  expectTypeOf(d.fn().this(d.string().convert(parseFloat))['$inferOutput']).toEqualTypeOf<(this: string) => any>();
 });
 
 test('ensure', () => {

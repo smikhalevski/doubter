@@ -6,7 +6,7 @@ import { Type } from '../Type.js';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
 import { ReadonlyShape } from './ReadonlyShape.js';
-import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Shape } from './Shape.js';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape.js';
 
 const recordInputs = Object.freeze<unknown[]>([Type.OBJECT]);
 
@@ -23,7 +23,10 @@ export const anyKeyShape = new Shape();
  * @group Shapes
  */
 export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesShape extends AnyShape>
-  extends Shape<Record<KeysShape[INPUT], ValuesShape[INPUT]>, Record<KeysShape[OUTPUT], ValuesShape[OUTPUT]>>
+  extends Shape<
+    Record<KeysShape['$inferInput'], ValuesShape['$inferInput']>,
+    Record<KeysShape['$inferOutput'], ValuesShape['$inferOutput']>
+  >
   implements DeepPartialProtocol<RecordShape<KeysShape, OptionalDeepPartialShape<ValuesShape>>>
 {
   /**
@@ -83,7 +86,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
     input: any,
     options: ParseOptions,
     nonce: number
-  ): Result<Record<KeysShape[OUTPUT], ValuesShape[OUTPUT]>> {
+  ): Result<Record<KeysShape['$inferOutput'], ValuesShape['$inferOutput']>> {
     if (!isObject(input)) {
       return [createIssue(CODE_TYPE_OBJECT, input, MESSAGE_TYPE_OBJECT, undefined, options, this._options)];
     }
@@ -148,7 +151,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
     input: any,
     options: ParseOptions,
     nonce: number
-  ): Promise<Result<Record<KeysShape[OUTPUT], ValuesShape[OUTPUT]>>> {
+  ): Promise<Result<Record<KeysShape['$inferOutput'], ValuesShape['$inferOutput']>>> {
     return new Promise(resolve => {
       if (!isObject(input)) {
         resolve([createIssue(CODE_TYPE_OBJECT, input, MESSAGE_TYPE_OBJECT, undefined, options, this._options)]);

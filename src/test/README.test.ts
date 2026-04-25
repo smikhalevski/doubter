@@ -60,7 +60,7 @@ describe('Cookbook', () => {
       user: userShape,
     });
 
-    type LocalStorageData = d.Input<typeof localStorageDataShape>;
+    type LocalStorageData = d.InferInput<typeof localStorageDataShape>;
 
     function getItem<K extends keyof LocalStorageData>(key: K): LocalStorageData[K] | null {
       const valueShape = localStorageDataShape.at(key);

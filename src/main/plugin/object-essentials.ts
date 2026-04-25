@@ -36,7 +36,7 @@ import { isPlainObject } from '../internal/lang.js';
 import { ReadonlyDict } from '../internal/objects.js';
 import { ObjectShape } from '../shape/ObjectShape.js';
 import { RecordShape } from '../shape/RecordShape.js';
-import { AnyShape, OUTPUT } from '../shape/Shape.js';
+import { AnyShape, InferOutput } from '../shape/Shape.js';
 import { IssueOptions, Message } from '../types.js';
 import { createIssue } from '../utils.js';
 
@@ -162,7 +162,7 @@ declare module '../core.js' {
      * @group Plugin Methods
      * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
-    allKeys(keys: Array<KeysShape[OUTPUT]>, options?: IssueOptions | Message): this;
+    allKeys(keys: Array<InferOutput<KeysShape>>, options?: IssueOptions | Message): this;
 
     /**
      * Defines a relationship between keys where not all peers can be present at the same time.
@@ -173,7 +173,7 @@ declare module '../core.js' {
      * @group Plugin Methods
      * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
-    notAllKeys(keys: Array<KeysShape[OUTPUT]>, options?: IssueOptions | Message): this;
+    notAllKeys(keys: Array<InferOutput<KeysShape>>, options?: IssueOptions | Message): this;
 
     /**
      * Defines a relationship between keys where at least one of the keys is required (and more than one is allowed).
@@ -184,7 +184,7 @@ declare module '../core.js' {
      * @group Plugin Methods
      * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
-    orKeys(keys: Array<KeysShape[OUTPUT]>, options?: IssueOptions | Message): this;
+    orKeys(keys: Array<InferOutput<KeysShape>>, options?: IssueOptions | Message): this;
 
     /**
      * Defines an exclusive relationship between a set of keys where one of them is required but not at the same time.
@@ -195,7 +195,7 @@ declare module '../core.js' {
      * @group Plugin Methods
      * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
-    xorKeys(keys: Array<KeysShape[OUTPUT]>, options?: IssueOptions | Message): this;
+    xorKeys(keys: Array<InferOutput<KeysShape>>, options?: IssueOptions | Message): this;
 
     /**
      * Defines an exclusive relationship between a set of keys where only one is allowed but none are required.
@@ -206,7 +206,7 @@ declare module '../core.js' {
      * @group Plugin Methods
      * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
-    oxorKeys(keys: Array<KeysShape[OUTPUT]>, options?: IssueOptions | Message): this;
+    oxorKeys(keys: Array<InferOutput<KeysShape>>, options?: IssueOptions | Message): this;
   }
 }
 

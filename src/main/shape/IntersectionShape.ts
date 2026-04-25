@@ -7,7 +7,7 @@ import { distributeTypes } from '../internal/types.js';
 import { Type } from '../Type.js';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape.js';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, InferInput, InferOutput, Shape } from './Shape.js';
 
 /**
  * Converts union to intersection.
@@ -27,7 +27,7 @@ type DeepPartialIntersectionShape<Shapes extends readonly AnyShape[]> = Intersec
  * @group Shapes
  */
 export class IntersectionShape<Shapes extends readonly AnyShape[]>
-  extends Shape<Input<Intersect<Shapes[number]>>, Output<Intersect<Shapes[number]>>>
+  extends Shape<InferInput<Intersect<Shapes[number]>>, InferOutput<Intersect<Shapes[number]>>>
   implements DeepPartialProtocol<DeepPartialIntersectionShape<Shapes>>
 {
   /**
@@ -90,7 +90,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     return distributeTypes(inputs);
   }
 
-  protected _apply(input: any, options: ParseOptions, nonce: number): Result<Output<Intersect<Shapes[number]>>> {
+  protected _apply(input: any, options: ParseOptions, nonce: number): Result<InferOutput<Intersect<Shapes[number]>>> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
@@ -132,7 +132,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     input: any,
     options: ParseOptions,
     nonce: number
-  ): Promise<Result<Output<Intersect<Shapes[number]>>>> {
+  ): Promise<Result<InferOutput<Intersect<Shapes[number]>>>> {
     return new Promise(resolve => {
       const { shapes } = this;
       const shapesLength = shapes.length;
@@ -184,7 +184,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     input: any,
     outputs: any[] | null,
     options: ParseOptions
-  ): Result<Output<Intersect<Shapes[number]>>> {
+  ): Result<InferOutput<Intersect<Shapes[number]>>> {
     let output = input;
 
     if (outputs !== null) {

@@ -10,9 +10,9 @@ import {
   AnyShape,
   DeepPartialProtocol,
   DeepPartialShape,
-  Input,
+  InferInput,
   OptionalDeepPartialShape,
-  Output,
+  InferOutput,
   Shape,
 } from './Shape.js';
 import { ReadonlyShape } from './ReadonlyShape.js';
@@ -28,7 +28,7 @@ const mapCoercibleInputs = Object.freeze<unknown[]>([Type.MAP, Type.OBJECT, Type
  * @group Shapes
  */
 export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
-  extends Shape<Map<Input<KeyShape>, Input<ValueShape>>, Map<Output<KeyShape>, Output<ValueShape>>>
+  extends Shape<Map<InferInput<KeyShape>, InferInput<ValueShape>>, Map<InferOutput<KeyShape>, InferOutput<ValueShape>>>
   implements DeepPartialProtocol<MapShape<DeepPartialShape<KeyShape>, OptionalDeepPartialShape<ValueShape>>>
 {
   /**
@@ -110,7 +110,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     input: any,
     options: ParseOptions,
     nonce: number
-  ): Result<Map<Output<KeyShape>, Output<ValueShape>>> {
+  ): Result<Map<InferOutput<KeyShape>, InferOutput<ValueShape>>> {
     let isChanged = false;
     let entries;
 
@@ -179,7 +179,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     input: any,
     options: ParseOptions,
     nonce: number
-  ): Promise<Result<Map<Output<KeyShape>, Output<ValueShape>>>> {
+  ): Promise<Result<Map<InferOutput<KeyShape>, InferOutput<ValueShape>>>> {
     return new Promise(resolve => {
       let isChanged = false;
       let entries;
