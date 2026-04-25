@@ -10,7 +10,7 @@ import { coerceToString, stringCoercibleInputs } from './string.js';
 /**
  * The array of inputs that are coercible to `NaN` with {@link coerceToConst}.
  */
-const nanCoercibleInputs = Object.freeze<unknown[]>([
+const nanCoercibleInputs: readonly unknown[] = Object.freeze([
   Type.ARRAY,
   Type.OBJECT, // new Number(NaN)
   NaN,
@@ -95,5 +95,6 @@ export function coerceToConst<T>(value: T, input: unknown): T {
   if (isEqual(coercedInput, canonicalValue)) {
     return value;
   }
+
   return NEVER;
 }

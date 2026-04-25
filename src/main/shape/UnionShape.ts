@@ -2,7 +2,7 @@ import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../constants.js';
 import { unique } from '../internal/arrays.js';
 import { isArray, isObject } from '../internal/lang.js';
 import { defineReadonlyProperty, ReadonlyDict } from '../internal/objects.js';
-import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes.js';
+import { applyShape, areAsyncShapes, toDeepPartialShape } from '../internal/shapes.js';
 import { isType } from '../internal/types.js';
 import { Type } from '../Type.js';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
@@ -79,7 +79,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
   }
 
   protected _isAsync(): boolean {
-    return isAsyncShapes(this.shapes);
+    return areAsyncShapes(this.shapes);
   }
 
   protected _getInputs(): readonly unknown[] {

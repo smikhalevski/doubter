@@ -72,9 +72,7 @@
     "RequiredPropShapes",
     "InferOrDefault",
     "ThisType",
-    "ToReadonly",
-    "'$inferInput'",
-    "'$inferOutput'"
+    "ToReadonly"
   ],
   "plugin": ["typedoc-plugin-mdn-links"],
   "externalSymbolLinkMappings": {

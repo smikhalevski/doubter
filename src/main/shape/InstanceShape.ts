@@ -5,13 +5,13 @@ import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
 import { Shape } from './Shape.js';
 
-const arrayInputs = Object.freeze<unknown[]>([Type.ARRAY]);
-const dateInputs = Object.freeze<unknown[]>([Type.DATE]);
-const functionInputs = Object.freeze<unknown[]>([Type.FUNCTION]);
-const mapInputs = Object.freeze<unknown[]>([Type.MAP]);
-const objectInputs = Object.freeze<unknown[]>([Type.OBJECT]);
-const promiseInputs = Object.freeze<unknown[]>([Type.PROMISE]);
-const setInputs = Object.freeze<unknown[]>([Type.SET]);
+const arrayInputs: readonly unknown[] = Object.freeze([Type.ARRAY]);
+const dateInputs: readonly unknown[] = Object.freeze([Type.DATE]);
+const functionInputs: readonly unknown[] = Object.freeze([Type.FUNCTION]);
+const mapInputs: readonly unknown[] = Object.freeze([Type.MAP]);
+const objectInputs: readonly unknown[] = Object.freeze([Type.OBJECT]);
+const promiseInputs: readonly unknown[] = Object.freeze([Type.PROMISE]);
+const setInputs: readonly unknown[] = Object.freeze([Type.SET]);
 
 /**
  * The shape of the class instance.

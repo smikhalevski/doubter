@@ -36,7 +36,7 @@ export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
 }
 
-export function isAsyncShapes(shapes: readonly AnyShape[] | null | undefined): boolean {
+export function areAsyncShapes(shapes: readonly AnyShape[] | null | undefined): boolean {
   if (shapes !== null && shapes !== undefined) {
     for (const shape of shapes) {
       if (shape.isAsync) {

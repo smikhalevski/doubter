@@ -7,10 +7,10 @@ import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
 import { Shape } from './Shape.js';
 
-const dateInputs = Object.freeze<unknown[]>([Type.DATE]);
+const dateInputs: readonly unknown[] = Object.freeze([Type.DATE]);
 
 /**
- * The shape of the {@link !Date} object.
+ * The shape of the {@link Date} object.
  *
  * @group Shapes
  */

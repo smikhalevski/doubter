@@ -5,7 +5,7 @@ import { NEVER } from './never.js';
 /**
  * The array of inputs that are coercible to a Date with {@link coerceToDate}.
  */
-export const dateCoercibleInputs = Object.freeze<unknown[]>([Type.ARRAY, Type.DATE, Type.STRING, Type.NUMBER]);
+export const dateCoercibleInputs: readonly unknown[] = Object.freeze([Type.ARRAY, Type.DATE, Type.STRING, Type.NUMBER]);
 
 /**
  * Coerces a value to a Date.
@@ -26,5 +26,6 @@ export function coerceToDate(input: unknown): Date {
   ) {
     return input;
   }
+
   return NEVER;
 }

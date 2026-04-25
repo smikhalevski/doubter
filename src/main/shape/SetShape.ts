@@ -7,13 +7,13 @@ import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal
 import { Type } from '../Type.js';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
-import { AnyShape, DeepPartialProtocol, InferInput, OptionalDeepPartialShape, InferOutput, Shape } from './Shape.js';
+import { AnyShape, DeepPartialProtocol, InferInput, InferOutput, OptionalDeepPartialShape, Shape } from './Shape.js';
 import { ReadonlyShape } from './ReadonlyShape.js';
 
-const setInputs = Object.freeze<unknown[]>([Type.SET]);
+const setInputs: readonly unknown[] = Object.freeze([Type.SET]);
 
 /**
- * The shape of a {@link !Set} instance.
+ * The shape of a {@link Set} instance.
  *
  * @template ValueShape The value shape.
  * @group Shapes
@@ -60,7 +60,7 @@ export class SetShape<ValueShape extends AnyShape>
   }
 
   /**
-   * Marks a {@link !Set} as readonly.
+   * Marks a {@link Set} as readonly.
    *
    * **Note:** This doesn't have any effect at runtime.
    */

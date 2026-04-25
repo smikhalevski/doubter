@@ -6,7 +6,7 @@ import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
 import { Shape } from './Shape.js';
 
-const booleanInputs = Object.freeze<unknown[]>([Type.BOOLEAN]);
+const booleanInputs: readonly unknown[] = Object.freeze([Type.BOOLEAN]);
 
 /**
  * The shape of a boolean value.

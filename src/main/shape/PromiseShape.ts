@@ -7,7 +7,7 @@ import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape.js';
 
-const promiseInputs = Object.freeze<unknown[]>([Type.PROMISE]);
+const promiseInputs: readonly unknown[] = Object.freeze([Type.PROMISE]);
 
 type InferPromise<ValueShape extends AnyShape | null, InferSide extends '$inferInput' | '$inferOutput'> = Promisify<
   ValueShape extends null | undefined ? any : ValueShape extends AnyShape ? ValueShape[InferSide] : any
@@ -18,7 +18,7 @@ type DeepPartialPromiseShape<ValueShape extends AnyShape | null> = PromiseShape<
 >;
 
 /**
- * The shape of a {@link !Promise} value.
+ * The shape of a {@link Promise} value.
  *
  * @template ValueShape The shape of the resolved value, or `null` if resolved value shouldn't be parsed.
  * @group Shapes

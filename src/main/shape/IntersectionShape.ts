@@ -2,7 +2,7 @@ import { NEVER } from '../coerce/never.js';
 import { CODE_TYPE_INTERSECTION, MESSAGE_TYPE_INTERSECTION } from '../constants.js';
 import { isArray, isEqual } from '../internal/lang.js';
 import { setProperty } from '../internal/objects.js';
-import { applyShape, concatIssues, isAsyncShapes, toDeepPartialShape } from '../internal/shapes.js';
+import { applyShape, areAsyncShapes, concatIssues, toDeepPartialShape } from '../internal/shapes.js';
 import { distributeTypes } from '../internal/types.js';
 import { Type } from '../Type.js';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
@@ -78,7 +78,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
   }
 
   protected _isAsync(): boolean {
-    return isAsyncShapes(this.shapes);
+    return areAsyncShapes(this.shapes);
   }
 
   protected _getInputs(): readonly unknown[] {

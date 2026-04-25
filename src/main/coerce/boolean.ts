@@ -5,12 +5,14 @@ import { NEVER } from './never.js';
 /**
  * The array of inputs that are coercible to a boolean with {@link coerceToBoolean}.
  */
-export const booleanCoercibleInputs = Object.freeze<unknown[]>([
+export const booleanCoercibleInputs: readonly unknown[] = Object.freeze([
   Type.ARRAY,
   Type.OBJECT,
   Type.BOOLEAN,
   'false',
   'true',
+  '0',
+  '1',
   0,
   1,
   null,
@@ -41,6 +43,7 @@ export function coerceToBoolean(input: unknown): boolean {
   ) {
     return false;
   }
+
   if (
     input === true ||
     input === 1 ||
@@ -50,5 +53,6 @@ export function coerceToBoolean(input: unknown): boolean {
   ) {
     return true;
   }
+
   return NEVER;
 }

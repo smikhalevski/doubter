@@ -15,7 +15,7 @@ import { createIssue } from '../utils.js';
 import { ValidationError } from '../ValidationError.js';
 import { AnyShape, InferInput, InferOutput, Shape } from './Shape.js';
 
-const functionInputs = Object.freeze<unknown[]>([Type.FUNCTION]);
+const functionInputs: readonly unknown[] = Object.freeze([Type.FUNCTION]);
 
 const KEY_THIS = 'this';
 const KEY_ARGS = 'arguments';

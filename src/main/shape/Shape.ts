@@ -43,7 +43,7 @@ import {
 import { createIssue, toIssueOptions } from '../utils.js';
 import { ValidationError } from '../ValidationError.js';
 
-export const unknownInputs = Object.freeze<unknown[]>([Type.UNKNOWN]);
+export const unknownInputs: readonly unknown[] = Object.freeze([Type.UNKNOWN]);
 
 /**
  * Extracts the shape input type.

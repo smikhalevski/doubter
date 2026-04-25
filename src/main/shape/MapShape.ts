@@ -11,17 +11,17 @@ import {
   DeepPartialProtocol,
   DeepPartialShape,
   InferInput,
-  OptionalDeepPartialShape,
   InferOutput,
+  OptionalDeepPartialShape,
   Shape,
 } from './Shape.js';
 import { ReadonlyShape } from './ReadonlyShape.js';
 
-const mapInputs = Object.freeze<unknown[]>([Type.MAP]);
-const mapCoercibleInputs = Object.freeze<unknown[]>([Type.MAP, Type.OBJECT, Type.ARRAY]);
+const mapInputs: readonly unknown[] = Object.freeze([Type.MAP]);
+const mapCoercibleInputs: readonly unknown[] = Object.freeze([Type.MAP, Type.OBJECT, Type.ARRAY]);
 
 /**
- * The shape of a {@link !Map} instance.
+ * The shape of a {@link Map} instance.
  *
  * @template KeyShape The key shape.
  * @template ValueShape The value shape.
@@ -79,7 +79,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   }
 
   /**
-   * Marks a {@link !Map} as readonly.
+   * Marks a {@link Map} as readonly.
    *
    * **Note:** This doesn't have any effect at runtime.
    */

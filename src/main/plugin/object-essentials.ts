@@ -43,7 +43,7 @@ import { createIssue } from '../utils.js';
 declare module '../core.js' {
   export interface ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> {
     /**
-     * Constrains an object to have a `null` or {@link !Object} prototype.
+     * Constrains an object to have a `null` or {@link Object} prototype.
      *
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
@@ -53,7 +53,7 @@ declare module '../core.js' {
     plain(options?: IssueOptions | Message): this;
 
     /**
-     * Constrains the minimum number of keys that an {@link !Object} must have.
+     * Constrains the minimum number of keys that an {@link Object} must have.
      *
      * @param size The minimum number of keys.
      * @param options The issue options or the issue message.
@@ -64,7 +64,7 @@ declare module '../core.js' {
     minKeyCount(size: number, options?: IssueOptions | Message): this;
 
     /**
-     * Constrains the maximum number of keys that an {@link !Object} must have.
+     * Constrains the maximum number of keys that an {@link Object} must have.
      *
      * @param size The maximum number of keys.
      * @param options The issue options or the issue message.
@@ -75,7 +75,7 @@ declare module '../core.js' {
     maxKeyCount(size: number, options?: IssueOptions | Message): this;
 
     /**
-     * Constrains the {@link !Object} to contain at least one key.
+     * Constrains the {@link Object} to contain at least one key.
      *
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
@@ -143,7 +143,7 @@ declare module '../core.js' {
 
   export interface RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesShape extends AnyShape> {
     /**
-     * Constrains a record to have a `null` or {@link !Object} prototype.
+     * Constrains a record to have a `null` or {@link Object} prototype.
      *
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
@@ -162,7 +162,7 @@ declare module '../core.js' {
      * @group Plugin Methods
      * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
-    allKeys(keys: Array<InferOutput<KeysShape>>, options?: IssueOptions | Message): this;
+    allKeys(keys: readonly InferOutput<KeysShape>[], options?: IssueOptions | Message): this;
 
     /**
      * Defines a relationship between keys where not all peers can be present at the same time.
@@ -173,7 +173,7 @@ declare module '../core.js' {
      * @group Plugin Methods
      * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
-    notAllKeys(keys: Array<InferOutput<KeysShape>>, options?: IssueOptions | Message): this;
+    notAllKeys(keys: readonly InferOutput<KeysShape>[], options?: IssueOptions | Message): this;
 
     /**
      * Defines a relationship between keys where at least one of the keys is required (and more than one is allowed).
@@ -184,7 +184,7 @@ declare module '../core.js' {
      * @group Plugin Methods
      * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
-    orKeys(keys: Array<InferOutput<KeysShape>>, options?: IssueOptions | Message): this;
+    orKeys(keys: readonly InferOutput<KeysShape>[], options?: IssueOptions | Message): this;
 
     /**
      * Defines an exclusive relationship between a set of keys where one of them is required but not at the same time.
@@ -195,7 +195,7 @@ declare module '../core.js' {
      * @group Plugin Methods
      * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
-    xorKeys(keys: Array<InferOutput<KeysShape>>, options?: IssueOptions | Message): this;
+    xorKeys(keys: readonly InferOutput<KeysShape>[], options?: IssueOptions | Message): this;
 
     /**
      * Defines an exclusive relationship between a set of keys where only one is allowed but none are required.
@@ -206,7 +206,7 @@ declare module '../core.js' {
      * @group Plugin Methods
      * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
-    oxorKeys(keys: Array<InferOutput<KeysShape>>, options?: IssueOptions | Message): this;
+    oxorKeys(keys: readonly InferOutput<KeysShape>[], options?: IssueOptions | Message): this;
   }
 }
 

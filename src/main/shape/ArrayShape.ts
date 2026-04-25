@@ -3,15 +3,15 @@ import { NEVER } from '../coerce/never.js';
 import { CODE_TYPE_ARRAY, CODE_TYPE_TUPLE, MESSAGE_TYPE_ARRAY, MESSAGE_TYPE_TUPLE } from '../constants.js';
 import { toArrayIndex } from '../internal/arrays.js';
 import { isArray } from '../internal/lang.js';
-import { applyShape, concatIssues, isAsyncShapes, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes.js';
+import { applyShape, areAsyncShapes, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes.js';
 import { Type } from '../Type.js';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
 import { ReadonlyShape } from './ReadonlyShape.js';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape.js';
 
-const arrayInputs = Object.freeze<unknown[]>([Type.ARRAY]);
-const arrayCoercibleInputs = Object.freeze<unknown[]>([Type.OBJECT, Type.ARRAY]);
+const arrayInputs: readonly unknown[] = Object.freeze([Type.ARRAY]);
+const arrayCoercibleInputs: readonly unknown[] = Object.freeze([Type.OBJECT, Type.ARRAY]);
 
 type InferArray<
   HeadShapes extends readonly AnyShape[],
@@ -132,7 +132,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   }
 
   protected _isAsync(): boolean {
-    return isAsyncShapes(this.headShapes) || this.restShape?.isAsync || false;
+    return areAsyncShapes(this.headShapes) || this.restShape?.isAsync || false;
   }
 
   protected _getInputs(): readonly unknown[] {

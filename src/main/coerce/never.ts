@@ -3,4 +3,4 @@
  *
  * @group Other
  */
-export const NEVER = Object.freeze({} as never);
+export const NEVER = Object.freeze({ __never: true } as never);

@@ -6,7 +6,7 @@ import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
 import { Shape } from './Shape.js';
 
-const stringInputs = Object.freeze<unknown[]>([Type.STRING]);
+const stringInputs: readonly unknown[] = Object.freeze([Type.STRING]);
 
 /**
  * The shape of a string value.

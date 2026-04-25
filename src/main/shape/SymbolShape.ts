@@ -4,7 +4,7 @@ import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
 import { Shape } from './Shape.js';
 
-const symbolInputs = Object.freeze<unknown[]>([Type.SYMBOL]);
+const symbolInputs: readonly unknown[] = Object.freeze([Type.SYMBOL]);
 
 /**
  * The shape of an arbitrary symbol value.

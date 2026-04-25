@@ -5,7 +5,7 @@ import { NEVER } from './never.js';
 /**
  * The array of inputs that are coercible to a bigint with {@link coerceToBigInt}.
  */
-export const bigintCoercibleInputs = Object.freeze<unknown[]>([
+export const bigintCoercibleInputs: readonly unknown[] = Object.freeze([
   Type.ARRAY,
   Type.BIGINT,
   Type.OBJECT,
@@ -42,5 +42,6 @@ export function coerceToBigInt(input: unknown): bigint {
       return BigInt(input);
     } catch {}
   }
+
   return NEVER;
 }

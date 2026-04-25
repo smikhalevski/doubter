@@ -1,4 +1,4 @@
-import { describe, test, measure } from 'toofast';
+import { describe, measure, test } from 'toofast';
 import * as valita from '@badrap/valita';
 import * as doubter from '../../../lib/index.js';
 

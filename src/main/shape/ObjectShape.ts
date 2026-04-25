@@ -4,9 +4,9 @@ import { isArray, isObject } from '../internal/lang.js';
 import { cloneObject, defineReadonlyProperty, Dict, pickKeys, ReadonlyDict, setProperty } from '../internal/objects.js';
 import {
   applyShape,
+  areAsyncShapes,
   concatIssues,
   copyOperations,
-  isAsyncShapes,
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../internal/shapes.js';
@@ -17,7 +17,7 @@ import { EnumShape } from './EnumShape.js';
 import { ReadonlyShape } from './ReadonlyShape.js';
 import { AllowShape, AnyShape, DeepPartialProtocol, DenyShape, OptionalDeepPartialShape, Shape } from './Shape.js';
 
-const objectInputs = Object.freeze<unknown[]>([Type.OBJECT]);
+const objectInputs: readonly unknown[] = Object.freeze([Type.OBJECT]);
 
 type InferObject<
   PropShapes extends ReadonlyDict<AnyShape>,
@@ -360,7 +360,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   }
 
   protected _isAsync(): boolean {
-    return this.restShape?.isAsync || isAsyncShapes(this.valueShapes);
+    return this.restShape?.isAsync || areAsyncShapes(this.valueShapes);
   }
 
   protected _getInputs(): readonly unknown[] {

@@ -5,8 +5,8 @@ import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
 import { Shape } from './Shape.js';
 
-const nullInputs = Object.freeze<unknown[]>([null]);
-const undefinedInputs = Object.freeze<unknown[]>([undefined]);
+const nullInputs: readonly unknown[] = Object.freeze([null]);
+const undefinedInputs: readonly unknown[] = Object.freeze([undefined]);
 
 /**
  * The shape of a constant value.

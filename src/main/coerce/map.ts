@@ -20,5 +20,6 @@ export function coerceToMapEntries(input: unknown): [unknown, unknown][] {
   if (isObjectLike(input)) {
     return Object.entries(input);
   }
+
   return NEVER;
 }

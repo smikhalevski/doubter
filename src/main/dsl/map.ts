@@ -3,7 +3,7 @@ import { AnyShape } from '../shape/Shape.js';
 import { IssueOptions, Message } from '../types.js';
 
 /**
- * Creates the {@link !Map} instance shape.
+ * Creates the {@link Map} instance shape.
  *
  * @param keyShape The key shape.
  * @param valueShape The value shape.

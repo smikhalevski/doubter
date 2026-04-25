@@ -6,7 +6,7 @@ import { Any, IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
 import { AllowShape, ReplaceShape, Shape } from './Shape.js';
 
-const numberInputs = Object.freeze<unknown[]>([Type.NUMBER]);
+const numberInputs: readonly unknown[] = Object.freeze([Type.NUMBER]);
 
 /**
  * The shape of a number value.

@@ -6,7 +6,7 @@ import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
 import { Shape } from './Shape.js';
 
-const bigintInputs = Object.freeze<unknown[]>([Type.BIGINT]);
+const bigintInputs: readonly unknown[] = Object.freeze([Type.BIGINT]);
 
 /**
  * The shape of a bigint value.

@@ -6,9 +6,9 @@ import { Type } from '../Type.js';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
 import { ReadonlyShape } from './ReadonlyShape.js';
-import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape.js';
+import { AnyShape, DeepPartialProtocol, InferInput, InferOutput, OptionalDeepPartialShape, Shape } from './Shape.js';
 
-const recordInputs = Object.freeze<unknown[]>([Type.OBJECT]);
+const recordInputs: readonly unknown[] = Object.freeze([Type.OBJECT]);
 
 /**
  * When this shape is used, keys of a record aren't checked.
@@ -24,8 +24,8 @@ export const anyKeyShape = new Shape();
  */
 export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesShape extends AnyShape>
   extends Shape<
-    Record<KeysShape['$inferInput'], ValuesShape['$inferInput']>,
-    Record<KeysShape['$inferOutput'], ValuesShape['$inferOutput']>
+    Record<InferInput<KeysShape>, InferInput<ValuesShape>>,
+    Record<InferOutput<KeysShape>, InferOutput<ValuesShape>>
   >
   implements DeepPartialProtocol<RecordShape<KeysShape, OptionalDeepPartialShape<ValuesShape>>>
 {
@@ -86,7 +86,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
     input: any,
     options: ParseOptions,
     nonce: number
-  ): Result<Record<KeysShape['$inferOutput'], ValuesShape['$inferOutput']>> {
+  ): Result<Record<InferOutput<KeysShape>, InferOutput<ValuesShape>>> {
     if (!isObject(input)) {
       return [createIssue(CODE_TYPE_OBJECT, input, MESSAGE_TYPE_OBJECT, undefined, options, this._options)];
     }
@@ -151,7 +151,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
     input: any,
     options: ParseOptions,
     nonce: number
-  ): Promise<Result<Record<KeysShape['$inferOutput'], ValuesShape['$inferOutput']>>> {
+  ): Promise<Result<Record<InferOutput<KeysShape>, InferOutput<ValuesShape>>>> {
     return new Promise(resolve => {
       if (!isObject(input)) {
         resolve([createIssue(CODE_TYPE_OBJECT, input, MESSAGE_TYPE_OBJECT, undefined, options, this._options)]);

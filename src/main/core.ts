@@ -64,5 +64,6 @@ export type {
   NotShape,
   InferOutput,
   RefineShape,
+  BrandShape,
 } from './shape/Shape.js';
 export type * from './types.js';

@@ -52,7 +52,7 @@ declare module '../core.js' {
     max(size: number, options?: IssueOptions | Message): this;
 
     /**
-     * Constrains the {@link !Set} to contain at least one element.
+     * Constrains the {@link Set} to contain at least one element.
      *
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.

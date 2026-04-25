@@ -5,7 +5,7 @@ import { NEVER } from './never.js';
 /**
  * The array of inputs that are coercible to a number with {@link coerceToNumber}.
  */
-export const numberCoercibleInputs = Object.freeze<unknown[]>([
+export const numberCoercibleInputs: readonly unknown[] = Object.freeze([
   Type.ARRAY,
   Type.OBJECT,
   Type.NUMBER,
