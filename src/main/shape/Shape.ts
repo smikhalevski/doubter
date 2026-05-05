@@ -7,7 +7,6 @@ import {
   MESSAGE_ANY_REFINE,
 } from '../constants.js';
 import { isArray, isEqual } from '../internal/lang.js';
-import { defineReadonlyProperty, Dict, ReadonlyDict } from '../internal/objects.js';
 import {
   adaptCheckResult,
   applyOperations,
@@ -42,6 +41,7 @@ import {
 } from '../types.js';
 import { createIssue, toIssueOptions } from '../utils.js';
 import { ValidationError } from '../ValidationError.js';
+import { defineReadonlyProperty } from '../internal/objects.js';
 
 export const unknownInputs: readonly unknown[] = Object.freeze([Type.UNKNOWN]);
 
@@ -198,7 +198,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @see {@link Shape.annotate}
    */
-  annotations: Dict = {};
+  annotations: Record<string, any> = {};
 
   /**
    * The array of operations that are applied to the shape output.
@@ -237,7 +237,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The clone of the shape with the updated annotations.
    * @see {@link Shape.annotations}
    */
-  annotate(annotations: ReadonlyDict): this {
+  annotate(annotations: Record<string, any>): this {
     const shape = this._clone();
     shape.annotations = Object.assign({}, this.annotations, annotations);
     return shape;

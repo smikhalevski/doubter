@@ -1,4 +1,3 @@
-import { ReadonlyDict } from '../internal/objects.js';
 import { ObjectShape } from '../shape/ObjectShape.js';
 import { AnyShape } from '../shape/Shape.js';
 import { IssueOptions, Message } from '../types.js';
@@ -11,7 +10,7 @@ import { IssueOptions, Message } from '../types.js';
  * @template PropShapes The mapping from a string object key to a corresponding value shape.
  * @group DSL
  */
-export function object<PropShapes extends ReadonlyDict<AnyShape>>(
+export function object<PropShapes extends Record<string, AnyShape>>(
   shapes: PropShapes,
   options?: IssueOptions | Message
 ): ObjectShape<PropShapes, null> {

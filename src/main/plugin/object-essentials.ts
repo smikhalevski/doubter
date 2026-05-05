@@ -33,7 +33,6 @@ import {
   MESSAGE_OBJECT_XOR_KEYS,
 } from '../constants.js';
 import { isPlainObject } from '../internal/lang.js';
-import { ReadonlyDict } from '../internal/objects.js';
 import { ObjectShape } from '../shape/ObjectShape.js';
 import { RecordShape } from '../shape/RecordShape.js';
 import { AnyShape, InferOutput } from '../shape/Shape.js';
@@ -41,7 +40,7 @@ import { IssueOptions, Message } from '../types.js';
 import { createIssue } from '../utils.js';
 
 declare module '../core.js' {
-  export interface ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> {
+  export interface ObjectShape<PropShapes extends Record<string, AnyShape>, RestShape extends AnyShape | null> {
     /**
      * Constrains an object to have a `null` or {@link Object} prototype.
      *
@@ -316,11 +315,11 @@ ObjectShape.prototype.oxorKeys = RecordShape.prototype.oxorKeys = function (keys
   );
 };
 
-function getKeyCount(value: ReadonlyDict): number {
+function getKeyCount(value: Record<string, any>): number {
   return Object.keys(value).length;
 }
 
-function getKnownKeyCount(value: ReadonlyDict, keys: readonly string[], maxKeyCount: number): number {
+function getKnownKeyCount(value: Record<string, any>, keys: readonly string[], maxKeyCount: number): number {
   let keyCount = 0;
 
   for (let i = 0; i < keys.length && keyCount < maxKeyCount; ++i) {

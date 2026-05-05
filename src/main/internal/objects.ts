@@ -1,11 +1,3 @@
-export interface ReadonlyDict<T = any> {
-  readonly [key: string]: T;
-}
-
-export interface Dict<T = any> {
-  [key: string]: T;
-}
-
 export function defineReadonlyProperty<T>(obj: object, key: PropertyKey, value: T): T {
   Object.defineProperty(obj, key, { value, configurable: true });
   return value;
@@ -26,7 +18,7 @@ export function setProperty<T>(obj: any, key: PropertyKey, value: T): T {
 /**
  * Shallow-clones a dictionary-like object.
  */
-export function cloneObject(dict: ReadonlyDict): Dict {
+export function cloneObject(dict: Record<string, any>): Record<string, any> {
   const obj = Object.create(Object.getPrototypeOf(dict));
 
   for (const key in dict) {
@@ -38,7 +30,7 @@ export function cloneObject(dict: ReadonlyDict): Dict {
 /**
  * Shallow-clones a dictionary-like object picking only a given set of keys.
  */
-export function pickKeys(dict: ReadonlyDict, keys: readonly string[]): Dict {
+export function pickKeys(dict: Record<string, any>, keys: readonly string[]): Record<string, any> {
   const obj = Object.create(Object.getPrototypeOf(dict));
 
   for (const key of keys) {
@@ -52,7 +44,7 @@ export function pickKeys(dict: ReadonlyDict, keys: readonly string[]): Dict {
 /**
  * Shallow-clones a dictionary-like object picking only the first `count` number of keys.
  */
-export function cloneRecord(dict: ReadonlyDict, count: number): Dict {
+export function cloneRecord(dict: Record<string, any>, count: number): Record<string, any> {
   const obj = Object.create(Object.getPrototypeOf(dict));
 
   let index = 0;

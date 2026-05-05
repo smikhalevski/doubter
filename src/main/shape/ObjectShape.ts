@@ -1,7 +1,6 @@
 import { CODE_OBJECT_EXACT, CODE_TYPE_OBJECT, MESSAGE_OBJECT_EXACT, MESSAGE_TYPE_OBJECT } from '../constants.js';
 import { Bitmask, getBit, toggleBit } from '../internal/bitmasks.js';
 import { isArray, isObject } from '../internal/lang.js';
-import { cloneObject, defineReadonlyProperty, Dict, pickKeys, ReadonlyDict, setProperty } from '../internal/objects.js';
 import {
   applyShape,
   areAsyncShapes,
@@ -16,11 +15,12 @@ import { createIssue } from '../utils.js';
 import { EnumShape } from './EnumShape.js';
 import { ReadonlyShape } from './ReadonlyShape.js';
 import { AllowShape, AnyShape, DeepPartialProtocol, DenyShape, OptionalDeepPartialShape, Shape } from './Shape.js';
+import { cloneObject, defineReadonlyProperty, pickKeys, setProperty } from '../internal/objects.js';
 
 const objectInputs: readonly unknown[] = Object.freeze([Type.OBJECT]);
 
 type InferObject<
-  PropShapes extends ReadonlyDict<AnyShape>,
+  PropShapes extends Record<string, AnyShape>,
   RestShape extends AnyShape | null,
   InferSide extends '$inferInput' | '$inferOutput',
 > = Prettify<
@@ -35,15 +35,18 @@ type OptionalKeys<T> = { [K in keyof T]: undefined extends Extract<T[K], undefin
 
 type Prettify<T> = { [K in keyof T]: T[K] } & {};
 
-type OptionalPropShapes<PropShapes extends ReadonlyDict<AnyShape>> = {
+type OptionalPropShapes<PropShapes extends Record<string, AnyShape>> = {
   [K in keyof PropShapes]: AllowShape<PropShapes[K], undefined>;
 };
 
-type RequiredPropShapes<PropShapes extends ReadonlyDict<AnyShape>> = {
+type RequiredPropShapes<PropShapes extends Record<string, AnyShape>> = {
   [K in keyof PropShapes]: DenyShape<PropShapes[K], undefined>;
 };
 
-type DeepPartialObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> = ObjectShape<
+type DeepPartialObjectShape<
+  PropShapes extends Record<string, AnyShape>,
+  RestShape extends AnyShape | null,
+> = ObjectShape<
   { [K in keyof PropShapes]: OptionalDeepPartialShape<PropShapes[K]> },
   RestShape extends null | undefined ? null : RestShape extends Shape ? OptionalDeepPartialShape<RestShape> : RestShape
 >;
@@ -74,7 +77,7 @@ export type ObjectKeysMode = 'preserved' | 'stripped' | 'exact';
  * if there's no index signature.
  * @group Shapes
  */
-export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null>
+export class ObjectShape<PropShapes extends Record<string, AnyShape>, RestShape extends AnyShape | null>
   extends Shape<InferObject<PropShapes, RestShape, '$inferInput'>, InferObject<PropShapes, RestShape, '$inferOutput'>>
   implements DeepPartialProtocol<DeepPartialObjectShape<PropShapes, RestShape>>
 {
@@ -171,7 +174,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @returns The new object shape.
    * @template T Properties to add.
    */
-  extend<T extends ReadonlyDict<AnyShape>>(
+  extend<T extends Record<string, AnyShape>>(
     shape: ObjectShape<T, any>
   ): ObjectShape<Omit<PropShapes, keyof T> & T, RestShape>;
 
@@ -187,9 +190,9 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @returns The new object shape.
    * @template T The shapes of properties to add.
    */
-  extend<T extends ReadonlyDict<AnyShape>>(shapes: T): ObjectShape<Omit<PropShapes, keyof T> & T, RestShape>;
+  extend<T extends Record<string, AnyShape>>(shapes: T): ObjectShape<Omit<PropShapes, keyof T> & T, RestShape>;
 
-  extend(shape: ObjectShape<any, any> | ReadonlyDict) {
+  extend(shape: ObjectShape<any, any> | Record<string, any>) {
     const propsShapes = Object.assign({}, this.propShapes, shape instanceof ObjectShape ? shape.propShapes : shape);
 
     return new ObjectShape(propsShapes, this.restShape, this._options, this.keysMode);
@@ -205,7 +208,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @template K The tuple of keys to pick.
    */
   pick<K extends ReadonlyArray<keyof PropShapes>>(keys: K): ObjectShape<Pick<PropShapes, K[number]>, RestShape> {
-    const propShapes: Dict<AnyShape> = {};
+    const propShapes: Record<string, AnyShape> = {};
 
     for (const key in this.propShapes) {
       if (keys.includes(key)) {
@@ -225,7 +228,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @template K The tuple of keys to omit.
    */
   omit<K extends ReadonlyArray<keyof PropShapes>>(keys: K): ObjectShape<Omit<PropShapes, K[number]>, RestShape> {
-    const propShapes: Dict<AnyShape> = {};
+    const propShapes: Record<string, AnyShape> = {};
 
     for (const key in this.propShapes) {
       if (!keys.includes(key)) {
@@ -258,7 +261,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   ): ObjectShape<Omit<PropShapes, K[number]> & OptionalPropShapes<Pick<PropShapes, K[number]>>, RestShape>;
 
   partial(keys?: string[]) {
-    const propShapes: Dict<AnyShape> = {};
+    const propShapes: Record<string, AnyShape> = {};
 
     for (const key in this.propShapes) {
       propShapes[key] =
@@ -268,7 +271,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   }
 
   deepPartial(): DeepPartialObjectShape<PropShapes, RestShape> {
-    const propShapes: Dict<AnyShape> = {};
+    const propShapes: Record<string, AnyShape> = {};
 
     for (const key in this.propShapes) {
       propShapes[key] = toDeepPartialShape(this.propShapes[key]).optional();
@@ -298,7 +301,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   ): ObjectShape<Omit<PropShapes, K[number]> & RequiredPropShapes<Pick<PropShapes, K[number]>>, RestShape>;
 
   required(keys?: string[]) {
-    const propShapes: Dict<AnyShape> = {};
+    const propShapes: Record<string, AnyShape> = {};
 
     for (const key in this.propShapes) {
       propShapes[key] =
@@ -506,7 +509,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Unknown keys are preserved as is and aren't checked.
    */
-  private _applyRestUnchecked(input: ReadonlyDict, options: ParseOptions, nonce: number): Result {
+  private _applyRestUnchecked(input: Record<string, any>, options: ParseOptions, nonce: number): Result {
     const { keys, operations, valueShapes } = this;
 
     const keysLength = keys.length;
@@ -544,7 +547,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Unknown keys are either parsed with a {@link ObjectShape.restShape}, stripped, or cause an issue.
    */
-  private _applyRestChecked(input: ReadonlyDict, options: ParseOptions, nonce: number): Result {
+  private _applyRestChecked(input: Record<string, any>, options: ParseOptions, nonce: number): Result {
     const { keys, keysMode, restShape, operations, valueShapes } = this;
 
     const keysLength = keys.length;

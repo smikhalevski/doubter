@@ -1,4 +1,3 @@
-import { ReadonlyDict } from '../internal/objects.js';
 import { EnumShape } from '../shape/EnumShape.js';
 import { Any, IssueOptions, Message } from '../types.js';
 
@@ -23,14 +22,14 @@ export function enum_<Value extends Any, ValuesArray extends readonly [Value, ..
  * @param values The native enum or a mapping object.
  * @param options The issue options or the issue message.
  * @template Value The union of allowed enum values.
- * @template ValuesDict The object that maps from the key to an enum value.
+ * @template ValuesRecord The object that maps from the key to an enum value.
  * @group DSL
  */
-export function enum_<Value extends Any, ValuesDict extends ReadonlyDict<Value>>(
-  values: ValuesDict,
+export function enum_<Value extends Any, ValuesRecord extends Record<string, Value>>(
+  values: ValuesRecord,
   options?: IssueOptions | Message
-): EnumShape<ValuesDict[keyof ValuesDict]>;
+): EnumShape<ValuesRecord[keyof ValuesRecord]>;
 
-export function enum_(source: any[] | ReadonlyDict, options?: IssueOptions | Message): EnumShape<any> {
+export function enum_(source: any[] | Record<string, any>, options?: IssueOptions | Message): EnumShape<any> {
   return new EnumShape(source, options);
 }

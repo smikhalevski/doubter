@@ -3,7 +3,6 @@ import { NEVER } from '../coerce/never.js';
 import { CODE_TYPE_ENUM, MESSAGE_TYPE_ENUM } from '../constants.js';
 import { unique } from '../internal/arrays.js';
 import { getCanonicalValue, isArray } from '../internal/lang.js';
-import { ReadonlyDict } from '../internal/objects.js';
 import { Type } from '../Type.js';
 import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
 import { createIssue } from '../utils.js';
@@ -42,7 +41,7 @@ export class EnumShape<Value> extends Shape<Value> {
     /**
      * The array of allowed values, a const key-value mapping, or an TypeScript enum object.
      */
-    readonly source: readonly Value[] | ReadonlyDict<Value>,
+    readonly source: readonly Value[] | Record<string, Value>,
     options?: IssueOptions | Message
   ) {
     super();
@@ -95,7 +94,7 @@ export class EnumShape<Value> extends Shape<Value> {
  * Returns unique values of the enum. Source must contain key-value and value-key mapping to be considered a native
  * enum.
  */
-export function getEnumValues(source: ReadonlyDict): any[] {
+export function getEnumValues(source: Record<string, any>): any[] {
   if (isArray(source)) {
     return unique(source);
   }
@@ -120,7 +119,7 @@ export function getEnumValues(source: ReadonlyDict): any[] {
 }
 
 function coerceToEnum<Value>(
-  source: readonly Value[] | ReadonlyDict<Value>,
+  source: readonly Value[] | Record<string, Value>,
   values: readonly Value[],
   input: unknown
 ): Value {
@@ -128,7 +127,7 @@ function coerceToEnum<Value>(
     return input as Value;
   }
   if (!isArray(source) && typeof (input = getCanonicalValue(input)) === 'string' && source.hasOwnProperty(input)) {
-    return (source as ReadonlyDict)[input];
+    return (source as Record<string, any>)[input];
   }
 
   for (const value of values) {

@@ -1,7 +1,7 @@
 import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../constants.js';
 import { unique } from '../internal/arrays.js';
 import { isArray, isObject } from '../internal/lang.js';
-import { defineReadonlyProperty, ReadonlyDict } from '../internal/objects.js';
+import { defineReadonlyProperty } from '../internal/objects.js';
 import { applyShape, areAsyncShapes, toDeepPartialShape } from '../internal/shapes.js';
 import { isType } from '../internal/types.js';
 import { Type } from '../Type.js';
@@ -198,7 +198,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
   }
 }
 
-type ObjectShapeLike = ObjectShape<ReadonlyDict<AnyShape>, AnyShape | null>;
+type ObjectShapeLike = ObjectShape<Record<string, AnyShape>, AnyShape | null>;
 
 export type LookupCallback = (input: any) => readonly AnyShape[];
 
