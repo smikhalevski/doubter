@@ -51,9 +51,6 @@ npm install --save-prod doubter
 
 <!--TOC-->
 
-- [API docs](https://smikhalevski.github.io/doubter/)
-- [Live example](https://codesandbox.io/s/y5kec4)
-
 <span class="toc-icon">🔰&ensp;</span>**Features**
 
 - [Introduction](#introduction)
@@ -150,6 +147,11 @@ npm install --save-prod doubter
 - [Type-safe `localStorage`](#type-safe-localstorage)
 - [Rename object keys](#rename-object-keys)
 - [Conditionally applied shapes](#conditionally-applied-shapes)
+
+<span class="toc-icon">🔎&ensp;</span>**Resources**
+
+- [API docs](https://smikhalevski.github.io/doubter/)
+- [Live example](https://codesandbox.io/s/y5kec4)
 
 <!--/TOC-->
 
