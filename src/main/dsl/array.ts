@@ -1,6 +1,7 @@
 import { ArrayShape } from '../shape/ArrayShape.js';
 import { AnyShape, Shape } from '../shape/Shape.js';
 import { IssueOptions, Message } from '../types.js';
+import { any } from './any.js';
 
 /**
  * Creates the unconstrained array shape.
@@ -30,6 +31,6 @@ export function array(
   if (shape instanceof Shape) {
     return new ArrayShape([], shape, options);
   } else {
-    return new ArrayShape([], new Shape(), shape);
+    return new ArrayShape([], any(), shape);
   }
 }

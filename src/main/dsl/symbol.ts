@@ -1,6 +1,8 @@
 import { SymbolShape } from '../shape/SymbolShape.js';
 import { IssueOptions, Message } from '../types.js';
 
+const defaultShape = new SymbolShape();
+
 /**
  * Creates the symbol shape.
  *
@@ -8,5 +10,5 @@ import { IssueOptions, Message } from '../types.js';
  * @group DSL
  */
 export function symbol(options?: IssueOptions | Message): SymbolShape {
-  return new SymbolShape(options);
+  return options === undefined ? defaultShape : new SymbolShape(options);
 }

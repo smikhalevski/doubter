@@ -1,6 +1,8 @@
 import { DateShape } from '../shape/DateShape.js';
 import { IssueOptions, Message } from '../types.js';
 
+const defaultShape = new DateShape();
+
 /**
  * Creates the {@link Date} shape.
  *
@@ -8,5 +10,5 @@ import { IssueOptions, Message } from '../types.js';
  * @group DSL
  */
 export function date(options?: IssueOptions | Message): DateShape {
-  return new DateShape(options);
+  return options === undefined ? defaultShape : new DateShape(options);
 }

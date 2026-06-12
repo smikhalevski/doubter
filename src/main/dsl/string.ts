@@ -1,6 +1,8 @@
 import { StringShape } from '../shape/StringShape.js';
 import { IssueOptions, Message } from '../types.js';
 
+const defaultShape = new StringShape();
+
 /**
  * Creates the string shape.
  *
@@ -8,5 +10,5 @@ import { IssueOptions, Message } from '../types.js';
  * @group DSL
  */
 export function string(options?: IssueOptions | Message): StringShape {
-  return new StringShape(options);
+  return options === undefined ? defaultShape : new StringShape(options);
 }

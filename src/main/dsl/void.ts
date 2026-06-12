@@ -1,5 +1,6 @@
 import { ConstShape } from '../shape/ConstShape.js';
 import { IssueOptions, Message } from '../types.js';
+import { undefined_ } from './undefined.js';
 
 /**
  * Creates a shape that requires an input to be `undefined` at runtime and typed as `void`.
@@ -8,5 +9,5 @@ import { IssueOptions, Message } from '../types.js';
  * @group DSL
  */
 export function void_(options?: IssueOptions | Message): ConstShape<void> {
-  return new ConstShape(undefined, options);
+  return undefined_(options);
 }

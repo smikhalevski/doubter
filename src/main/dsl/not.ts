@@ -1,5 +1,6 @@
 import { AnyShape, NotShape, Shape } from '../shape/Shape.js';
 import { IssueOptions, Message } from '../types.js';
+import { any } from './any.js';
 
 /**
  * Creates the shape that only allows values that don't conform the shape.
@@ -13,5 +14,5 @@ export function not<ExcludedShape extends AnyShape>(
   shape: ExcludedShape,
   options?: IssueOptions | Message
 ): NotShape<Shape, ExcludedShape> {
-  return new Shape().not(shape, options);
+  return any().not(shape, options);
 }

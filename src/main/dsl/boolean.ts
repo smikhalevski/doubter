@@ -1,6 +1,8 @@
 import { BooleanShape } from '../shape/BooleanShape.js';
 import { IssueOptions, Message } from '../types.js';
 
+const defaultShape = new BooleanShape();
+
 /**
  * Creates the boolean shape.
  *
@@ -8,5 +10,5 @@ import { IssueOptions, Message } from '../types.js';
  * @group DSL
  */
 export function boolean(options?: IssueOptions | Message): BooleanShape {
-  return new BooleanShape(options);
+  return options === undefined ? defaultShape : new BooleanShape(options);
 }

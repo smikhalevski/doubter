@@ -1,6 +1,8 @@
 import { ConstShape } from '../shape/ConstShape.js';
 import { IssueOptions, Message } from '../types.js';
 
+const defaultShape = new ConstShape(null);
+
 /**
  * Creates the shape that requires an input to be equal to `null`.
  *
@@ -8,5 +10,5 @@ import { IssueOptions, Message } from '../types.js';
  * @group DSL
  */
 export function null_(options?: IssueOptions | Message): ConstShape<null> {
-  return new ConstShape(null, options);
+  return options === undefined ? defaultShape : new ConstShape(null, options);
 }

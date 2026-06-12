@@ -1,5 +1,9 @@
+import '../plugin/number-essentials.js';
 import { NumberShape } from '../shape/NumberShape.js';
 import { IssueOptions, Message } from '../types.js';
+import { number } from './number.js';
+
+const defaultShape = number().int();
 
 /**
  * Creates the integer number shape.
@@ -13,5 +17,5 @@ import { IssueOptions, Message } from '../types.js';
  * @group DSL
  */
 export function int(options?: IssueOptions | Message): NumberShape {
-  return new NumberShape(options).int(options);
+  return options === undefined ? defaultShape : number(options).int(options);
 }

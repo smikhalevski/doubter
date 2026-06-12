@@ -1,6 +1,8 @@
 import { BigIntShape } from '../shape/BigIntShape.js';
 import { IssueOptions, Message } from '../types.js';
 
+const defaultShape = new BigIntShape();
+
 /**
  * Creates the bigint shape.
  *
@@ -8,5 +10,5 @@ import { IssueOptions, Message } from '../types.js';
  * @group DSL
  */
 export function bigint(options?: IssueOptions | Message): BigIntShape {
-  return new BigIntShape(options);
+  return options === undefined ? defaultShape : new BigIntShape(options);
 }

@@ -1,6 +1,8 @@
 import { AnyShape, Shape } from '../shape/Shape.js';
 import { Message, ParseOptions, RefineOptions } from '../types.js';
 
+const defaultShape = new Shape();
+
 /**
  * Creates the unconstrained shape.
  *
@@ -50,7 +52,5 @@ export function any<Value = any>(
 ): Shape<Value>;
 
 export function any(cb?: (value: any, options: ParseOptions) => boolean, options?: RefineOptions | Message): AnyShape {
-  const shape = new Shape();
-
-  return cb === null || cb === undefined ? shape : shape.refine(cb, options);
+  return cb === null || cb === undefined ? defaultShape : defaultShape.refine(cb, options);
 }

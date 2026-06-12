@@ -1,6 +1,8 @@
 import { NumberShape } from '../shape/NumberShape.js';
 import { IssueOptions, Message } from '../types.js';
 
+const defaultShape = new NumberShape();
+
 /**
  * Creates the number shape.
  *
@@ -8,5 +10,5 @@ import { IssueOptions, Message } from '../types.js';
  * @group DSL
  */
 export function number(options?: IssueOptions | Message): NumberShape {
-  return new NumberShape(options);
+  return options == undefined ? defaultShape : new NumberShape(options);
 }
