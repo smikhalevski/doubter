@@ -28,10 +28,10 @@ type InferObject<
     (RestShape extends null | undefined ? {} : RestShape extends Shape ? { [key: string]: RestShape[InferSide] } : {})
 >;
 
-type UndefinedToOptional<T> = Omit<T, OptionalKeys<T>> & { [K in OptionalKeys<T>]?: T[K] };
-
-// Extract is required for disabled strictNullChecks
-type OptionalKeys<T> = { [K in keyof T]: undefined extends Extract<T[K], undefined> ? K : never }[keyof T];
+type UndefinedToOptional<T> = Partial<T> & {
+  // Extract is required for disabled strictNullChecks
+  [K in keyof T as undefined extends Extract<T[K], undefined> ? never : K]: T[K];
+};
 
 type Prettify<T> = { [K in keyof T]: T[K] } & {};
 
