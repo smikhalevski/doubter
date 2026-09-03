@@ -29,6 +29,7 @@ export { uint } from './dsl/uint.js';
 export { undefined_ as undefined } from './dsl/undefined.js';
 export { union, union as or } from './dsl/union.js';
 export { unknown } from './dsl/unknown.js';
+export { url } from './dsl/url.js';
 export { void_ as void } from './dsl/void.js';
 
 export { ArrayShape } from './shape/ArrayShape.js';

@@ -19,6 +19,7 @@ import {
   CODE_STRING_NON_BLANK,
   CODE_STRING_REGEX,
   CODE_STRING_STARTS_WITH,
+  CODE_STRING_URL,
   MESSAGE_STRING_ENDS_WITH,
   MESSAGE_STRING_INCLUDES,
   MESSAGE_STRING_MAX,
@@ -26,6 +27,7 @@ import {
   MESSAGE_STRING_NON_BLANK,
   MESSAGE_STRING_REGEX,
   MESSAGE_STRING_STARTS_WITH,
+  MESSAGE_STRING_URL,
 } from '../constants.js';
 import { StringShape } from '../shape/StringShape.js';
 import { IssueOptions, Message } from '../types.js';
@@ -127,6 +129,15 @@ declare module '../core.js' {
      * @plugin {@link plugin/string-essentials! plugin/string-essentials}
      */
     nonEmpty(options?: IssueOptions | Message): this;
+
+    /**
+     * Checks that the string can be parsed as a {@link URL}.
+     *
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link plugin/string-essentials! plugin/string-essentials}
+     */
+    url(options?: IssueOptions | Message): this;
 
     /**
      * Trims the output string.
@@ -247,6 +258,18 @@ StringShape.prototype.nonBlank = function (issueOptions) {
 
 StringShape.prototype.nonEmpty = function (issueOptions) {
   return this.min(1, issueOptions);
+};
+
+StringShape.prototype.url = function (issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (URL.canParse(value)) {
+        return null;
+      }
+      return [createIssue(CODE_STRING_URL, value, MESSAGE_STRING_URL, param, options, issueOptions)];
+    },
+    { type: CODE_STRING_URL }
+  );
 };
 
 StringShape.prototype.trim = function () {

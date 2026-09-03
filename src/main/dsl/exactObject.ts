@@ -7,7 +7,7 @@ import { IssueOptions, Message } from '../types.js';
  *
  * Shortcut for:
  * ```
- * d.object(shapes).exact()
+ * d.object(shapes, options).exact(options)
  * ```
  *
  * @param shapes The mapping from an object key to a corresponding shape.

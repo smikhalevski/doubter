@@ -8,6 +8,7 @@ import {
   CODE_STRING_NON_BLANK,
   CODE_STRING_REGEX,
   CODE_STRING_STARTS_WITH,
+  CODE_STRING_URL,
   MESSAGE_STRING_NON_BLANK,
 } from '../../main/constants.js';
 
@@ -125,6 +126,17 @@ describe('nonEmpty', () => {
     });
 
     expect(new StringShape().nonEmpty().parse('aaa')).toBe('aaa');
+  });
+});
+
+describe('url', () => {
+  test('raises if string cannot be parsed as a URL', () => {
+    expect(new StringShape().url().try('xxx')).toEqual({
+      ok: false,
+      issues: [{ code: CODE_STRING_URL, input: 'xxx', param: undefined, message: 'Must be a URL' }],
+    });
+
+    expect(new StringShape().url().parse('http://xxx')).toBe('http://xxx');
   });
 });
 
